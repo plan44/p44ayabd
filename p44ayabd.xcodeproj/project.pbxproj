@@ -1,0 +1,446 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		ED8622C31AC29D4800CB818B /* p44ayabd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622C21AC29D4800CB818B /* p44ayabd.cpp */; };
+		ED8623061AC29DB600CB818B /* i2c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622CA1AC29DB600CB818B /* i2c.cpp */; };
+		ED8623071AC29DB600CB818B /* operationqueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622CC1AC29DB600CB818B /* operationqueue.cpp */; };
+		ED8623081AC29DB600CB818B /* analogio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622CD1AC29DB600CB818B /* analogio.cpp */; };
+		ED8623091AC29DB600CB818B /* application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622CF1AC29DB600CB818B /* application.cpp */; };
+		ED86230A1AC29DB600CB818B /* colorutils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622D01AC29DB600CB818B /* colorutils.cpp */; };
+		ED86230B1AC29DB600CB818B /* digitalio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622D11AC29DB600CB818B /* digitalio.cpp */; };
+		ED86230C1AC29DB700CB818B /* error.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622D31AC29DB600CB818B /* error.cpp */; };
+		ED86230D1AC29DB700CB818B /* fdcomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622D41AC29DB600CB818B /* fdcomm.cpp */; };
+		ED86230E1AC29DB700CB818B /* gpio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622D51AC29DB600CB818B /* gpio.cpp */; };
+		ED86230F1AC29DB700CB818B /* iopin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622D61AC29DB600CB818B /* iopin.cpp */; };
+		ED8623101AC29DB700CB818B /* mainloop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622D81AC29DB600CB818B /* mainloop.cpp */; };
+		ED8623111AC29DB700CB818B /* serialcomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622DA1AC29DB600CB818B /* serialcomm.cpp */; };
+		ED8623121AC29DB700CB818B /* serialqueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622DB1AC29DB600CB818B /* serialqueue.cpp */; };
+		ED8623131AC29DB700CB818B /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622DC1AC29DB600CB818B /* utils.cpp */; };
+		ED8623141AC29DB700CB818B /* jsonrpccomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622DE1AC29DB600CB818B /* jsonrpccomm.cpp */; };
+		ED8623181AC29DB700CB818B /* jsoncomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622E71AC29DB600CB818B /* jsoncomm.cpp */; };
+		ED86231A1AC29DB700CB818B /* socketcomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622EE1AC29DB600CB818B /* socketcomm.cpp */; };
+		ED86231B1AC29DB700CB818B /* ssdpsearch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622F01AC29DB600CB818B /* ssdpsearch.cpp */; };
+		ED86231C1AC29DB700CB818B /* consolekey.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622F31AC29DB600CB818B /* consolekey.cpp */; };
+		ED86231D1AC29DB700CB818B /* macaddress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622F61AC29DB600CB818B /* macaddress.cpp */; };
+		ED86231E1AC29DB700CB818B /* crc32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622FA1AC29DB600CB818B /* crc32.cpp */; };
+		ED86231F1AC29DB700CB818B /* p44obj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622FC1AC29DB600CB818B /* p44obj.cpp */; };
+		ED8623201AC29DB700CB818B /* fnv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622FE1AC29DB600CB818B /* fnv.cpp */; };
+		ED8623211AC29DB700CB818B /* logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8623001AC29DB600CB818B /* logger.cpp */; };
+		ED8623221AC29DB700CB818B /* jsonobject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8623021AC29DB600CB818B /* jsonobject.cpp */; };
+		ED8623261AC2EF4E00CB818B /* ayabcomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8623241AC2EF4E00CB818B /* ayabcomm.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		ED8622BD1AC29D4800CB818B /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		ED8622BF1AC29D4800CB818B /* p44ayabd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = p44ayabd; sourceTree = BUILT_PRODUCTS_DIR; };
+		ED8622C21AC29D4800CB818B /* p44ayabd.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = p44ayabd.cpp; sourceTree = "<group>"; };
+		ED8622CA1AC29DB600CB818B /* i2c.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = i2c.cpp; sourceTree = "<group>"; };
+		ED8622CB1AC29DB600CB818B /* i2c.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = i2c.hpp; sourceTree = "<group>"; };
+		ED8622CC1AC29DB600CB818B /* operationqueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = operationqueue.cpp; sourceTree = "<group>"; };
+		ED8622CD1AC29DB600CB818B /* analogio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = analogio.cpp; sourceTree = "<group>"; };
+		ED8622CE1AC29DB600CB818B /* analogio.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = analogio.hpp; sourceTree = "<group>"; };
+		ED8622CF1AC29DB600CB818B /* application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = application.cpp; sourceTree = "<group>"; };
+		ED8622D01AC29DB600CB818B /* colorutils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = colorutils.cpp; sourceTree = "<group>"; };
+		ED8622D11AC29DB600CB818B /* digitalio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = digitalio.cpp; sourceTree = "<group>"; };
+		ED8622D21AC29DB600CB818B /* digitalio.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = digitalio.hpp; sourceTree = "<group>"; };
+		ED8622D31AC29DB600CB818B /* error.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = error.cpp; sourceTree = "<group>"; };
+		ED8622D41AC29DB600CB818B /* fdcomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fdcomm.cpp; sourceTree = "<group>"; };
+		ED8622D51AC29DB600CB818B /* gpio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gpio.cpp; sourceTree = "<group>"; };
+		ED8622D61AC29DB600CB818B /* iopin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = iopin.cpp; sourceTree = "<group>"; };
+		ED8622D71AC29DB600CB818B /* iopin.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = iopin.hpp; sourceTree = "<group>"; };
+		ED8622D81AC29DB600CB818B /* mainloop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mainloop.cpp; sourceTree = "<group>"; };
+		ED8622D91AC29DB600CB818B /* mainloop.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = mainloop.hpp; sourceTree = "<group>"; };
+		ED8622DA1AC29DB600CB818B /* serialcomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = serialcomm.cpp; sourceTree = "<group>"; };
+		ED8622DB1AC29DB600CB818B /* serialqueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = serialqueue.cpp; sourceTree = "<group>"; };
+		ED8622DC1AC29DB600CB818B /* utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utils.cpp; sourceTree = "<group>"; };
+		ED8622DD1AC29DB600CB818B /* consolekey.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = consolekey.hpp; sourceTree = "<group>"; };
+		ED8622DE1AC29DB600CB818B /* jsonrpccomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsonrpccomm.cpp; sourceTree = "<group>"; };
+		ED8622DF1AC29DB600CB818B /* logger.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = logger.hpp; sourceTree = "<group>"; };
+		ED8622E01AC29DB600CB818B /* persistentparams.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = persistentparams.cpp; sourceTree = "<group>"; };
+		ED8622E11AC29DB600CB818B /* persistentparams.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = persistentparams.hpp; sourceTree = "<group>"; };
+		ED8622E21AC29DB600CB818B /* sqlite3persistence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sqlite3persistence.cpp; sourceTree = "<group>"; };
+		ED8622E31AC29DB600CB818B /* sqlite3persistence.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = sqlite3persistence.hpp; sourceTree = "<group>"; };
+		ED8622E41AC29DB600CB818B /* fdcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fdcomm.hpp; sourceTree = "<group>"; };
+		ED8622E51AC29DB600CB818B /* httpcomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = httpcomm.cpp; sourceTree = "<group>"; };
+		ED8622E61AC29DB600CB818B /* httpcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = httpcomm.hpp; sourceTree = "<group>"; };
+		ED8622E71AC29DB600CB818B /* jsoncomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsoncomm.cpp; sourceTree = "<group>"; };
+		ED8622E81AC29DB600CB818B /* jsoncomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsoncomm.hpp; sourceTree = "<group>"; };
+		ED8622E91AC29DB600CB818B /* jsonrpccomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsonrpccomm.hpp; sourceTree = "<group>"; };
+		ED8622EA1AC29DB600CB818B /* jsonwebclient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsonwebclient.cpp; sourceTree = "<group>"; };
+		ED8622EB1AC29DB600CB818B /* jsonwebclient.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsonwebclient.hpp; sourceTree = "<group>"; };
+		ED8622EC1AC29DB600CB818B /* serialcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = serialcomm.hpp; sourceTree = "<group>"; };
+		ED8622ED1AC29DB600CB818B /* serialqueue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = serialqueue.hpp; sourceTree = "<group>"; };
+		ED8622EE1AC29DB600CB818B /* socketcomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = socketcomm.cpp; sourceTree = "<group>"; };
+		ED8622EF1AC29DB600CB818B /* socketcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = socketcomm.hpp; sourceTree = "<group>"; };
+		ED8622F01AC29DB600CB818B /* ssdpsearch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ssdpsearch.cpp; sourceTree = "<group>"; };
+		ED8622F11AC29DB600CB818B /* ssdpsearch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ssdpsearch.hpp; sourceTree = "<group>"; };
+		ED8622F21AC29DB600CB818B /* colorutils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = colorutils.hpp; sourceTree = "<group>"; };
+		ED8622F31AC29DB600CB818B /* consolekey.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = consolekey.cpp; sourceTree = "<group>"; };
+		ED8622F41AC29DB600CB818B /* error.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = error.hpp; sourceTree = "<group>"; };
+		ED8622F51AC29DB600CB818B /* gpio.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gpio.hpp; sourceTree = "<group>"; };
+		ED8622F61AC29DB600CB818B /* macaddress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = macaddress.cpp; sourceTree = "<group>"; };
+		ED8622F71AC29DB600CB818B /* macaddress.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = macaddress.hpp; sourceTree = "<group>"; };
+		ED8622F81AC29DB600CB818B /* operationqueue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = operationqueue.hpp; sourceTree = "<group>"; };
+		ED8622F91AC29DB600CB818B /* utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = utils.hpp; sourceTree = "<group>"; };
+		ED8622FA1AC29DB600CB818B /* crc32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = crc32.cpp; sourceTree = "<group>"; };
+		ED8622FB1AC29DB600CB818B /* crc32.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = crc32.hpp; sourceTree = "<group>"; };
+		ED8622FC1AC29DB600CB818B /* p44obj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = p44obj.cpp; sourceTree = "<group>"; };
+		ED8622FD1AC29DB600CB818B /* p44obj.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = p44obj.hpp; sourceTree = "<group>"; };
+		ED8622FE1AC29DB600CB818B /* fnv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fnv.cpp; sourceTree = "<group>"; };
+		ED8622FF1AC29DB600CB818B /* fnv.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fnv.hpp; sourceTree = "<group>"; };
+		ED8623001AC29DB600CB818B /* logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = logger.cpp; sourceTree = "<group>"; };
+		ED8623011AC29DB600CB818B /* application.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = application.hpp; sourceTree = "<group>"; };
+		ED8623021AC29DB600CB818B /* jsonobject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsonobject.cpp; sourceTree = "<group>"; };
+		ED8623031AC29DB600CB818B /* jsonobject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsonobject.hpp; sourceTree = "<group>"; };
+		ED8623041AC29DB600CB818B /* p44_common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = p44_common.hpp; sourceTree = "<group>"; };
+		ED8623051AC29DB600CB818B /* gpio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gpio.h; sourceTree = "<group>"; };
+		ED8623241AC2EF4E00CB818B /* ayabcomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ayabcomm.cpp; sourceTree = "<group>"; };
+		ED8623251AC2EF4E00CB818B /* ayabcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ayabcomm.hpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		ED8622BC1AC29D4800CB818B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		ED8622B61AC29D4800CB818B = {
+			isa = PBXGroup;
+			children = (
+				ED8622C11AC29D4800CB818B /* src */,
+				ED8622C01AC29D4800CB818B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		ED8622C01AC29D4800CB818B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				ED8622BF1AC29D4800CB818B /* p44ayabd */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		ED8622C11AC29D4800CB818B /* src */ = {
+			isa = PBXGroup;
+			children = (
+				ED8622C91AC29D7A00CB818B /* p44utils */,
+				ED8623241AC2EF4E00CB818B /* ayabcomm.cpp */,
+				ED8623251AC2EF4E00CB818B /* ayabcomm.hpp */,
+				ED8622C21AC29D4800CB818B /* p44ayabd.cpp */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		ED8622C91AC29D7A00CB818B /* p44utils */ = {
+			isa = PBXGroup;
+			children = (
+				ED8622CD1AC29DB600CB818B /* analogio.cpp */,
+				ED8622CE1AC29DB600CB818B /* analogio.hpp */,
+				ED8622CF1AC29DB600CB818B /* application.cpp */,
+				ED8623011AC29DB600CB818B /* application.hpp */,
+				ED8622D01AC29DB600CB818B /* colorutils.cpp */,
+				ED8622F21AC29DB600CB818B /* colorutils.hpp */,
+				ED8622F31AC29DB600CB818B /* consolekey.cpp */,
+				ED8622DD1AC29DB600CB818B /* consolekey.hpp */,
+				ED8622FA1AC29DB600CB818B /* crc32.cpp */,
+				ED8622FB1AC29DB600CB818B /* crc32.hpp */,
+				ED8622D11AC29DB600CB818B /* digitalio.cpp */,
+				ED8622D21AC29DB600CB818B /* digitalio.hpp */,
+				ED8622D31AC29DB600CB818B /* error.cpp */,
+				ED8622F41AC29DB600CB818B /* error.hpp */,
+				ED8622D41AC29DB600CB818B /* fdcomm.cpp */,
+				ED8622E41AC29DB600CB818B /* fdcomm.hpp */,
+				ED8622FE1AC29DB600CB818B /* fnv.cpp */,
+				ED8622FF1AC29DB600CB818B /* fnv.hpp */,
+				ED8622D51AC29DB600CB818B /* gpio.cpp */,
+				ED8623051AC29DB600CB818B /* gpio.h */,
+				ED8622F51AC29DB600CB818B /* gpio.hpp */,
+				ED8622E51AC29DB600CB818B /* httpcomm.cpp */,
+				ED8622E61AC29DB600CB818B /* httpcomm.hpp */,
+				ED8622CA1AC29DB600CB818B /* i2c.cpp */,
+				ED8622CB1AC29DB600CB818B /* i2c.hpp */,
+				ED8622D61AC29DB600CB818B /* iopin.cpp */,
+				ED8622D71AC29DB600CB818B /* iopin.hpp */,
+				ED8622E71AC29DB600CB818B /* jsoncomm.cpp */,
+				ED8622E81AC29DB600CB818B /* jsoncomm.hpp */,
+				ED8623021AC29DB600CB818B /* jsonobject.cpp */,
+				ED8623031AC29DB600CB818B /* jsonobject.hpp */,
+				ED8622DE1AC29DB600CB818B /* jsonrpccomm.cpp */,
+				ED8622E91AC29DB600CB818B /* jsonrpccomm.hpp */,
+				ED8622EA1AC29DB600CB818B /* jsonwebclient.cpp */,
+				ED8622EB1AC29DB600CB818B /* jsonwebclient.hpp */,
+				ED8623001AC29DB600CB818B /* logger.cpp */,
+				ED8622DF1AC29DB600CB818B /* logger.hpp */,
+				ED8622F61AC29DB600CB818B /* macaddress.cpp */,
+				ED8622F71AC29DB600CB818B /* macaddress.hpp */,
+				ED8622D81AC29DB600CB818B /* mainloop.cpp */,
+				ED8622D91AC29DB600CB818B /* mainloop.hpp */,
+				ED8622CC1AC29DB600CB818B /* operationqueue.cpp */,
+				ED8622F81AC29DB600CB818B /* operationqueue.hpp */,
+				ED8622FC1AC29DB600CB818B /* p44obj.cpp */,
+				ED8622FD1AC29DB600CB818B /* p44obj.hpp */,
+				ED8622E01AC29DB600CB818B /* persistentparams.cpp */,
+				ED8622E11AC29DB600CB818B /* persistentparams.hpp */,
+				ED8622DA1AC29DB600CB818B /* serialcomm.cpp */,
+				ED8622EC1AC29DB600CB818B /* serialcomm.hpp */,
+				ED8622DB1AC29DB600CB818B /* serialqueue.cpp */,
+				ED8622ED1AC29DB600CB818B /* serialqueue.hpp */,
+				ED8622EE1AC29DB600CB818B /* socketcomm.cpp */,
+				ED8622EF1AC29DB600CB818B /* socketcomm.hpp */,
+				ED8622E21AC29DB600CB818B /* sqlite3persistence.cpp */,
+				ED8622E31AC29DB600CB818B /* sqlite3persistence.hpp */,
+				ED8622F01AC29DB600CB818B /* ssdpsearch.cpp */,
+				ED8622F11AC29DB600CB818B /* ssdpsearch.hpp */,
+				ED8622DC1AC29DB600CB818B /* utils.cpp */,
+				ED8622F91AC29DB600CB818B /* utils.hpp */,
+				ED8623041AC29DB600CB818B /* p44_common.hpp */,
+			);
+			path = p44utils;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		ED8622BE1AC29D4800CB818B /* p44ayabd */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ED8622C61AC29D4800CB818B /* Build configuration list for PBXNativeTarget "p44ayabd" */;
+			buildPhases = (
+				ED8622BB1AC29D4800CB818B /* Sources */,
+				ED8622BC1AC29D4800CB818B /* Frameworks */,
+				ED8622BD1AC29D4800CB818B /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = p44ayabd;
+			productName = p44ayabd;
+			productReference = ED8622BF1AC29D4800CB818B /* p44ayabd */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		ED8622B71AC29D4800CB818B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0620;
+				ORGANIZATIONNAME = plan44.ch;
+				TargetAttributes = {
+					ED8622BE1AC29D4800CB818B = {
+						CreatedOnToolsVersion = 6.2;
+					};
+				};
+			};
+			buildConfigurationList = ED8622BA1AC29D4800CB818B /* Build configuration list for PBXProject "p44ayabd" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = ED8622B61AC29D4800CB818B;
+			productRefGroup = ED8622C01AC29D4800CB818B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				ED8622BE1AC29D4800CB818B /* p44ayabd */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		ED8622BB1AC29D4800CB818B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ED86231B1AC29DB700CB818B /* ssdpsearch.cpp in Sources */,
+				ED86231D1AC29DB700CB818B /* macaddress.cpp in Sources */,
+				ED8623201AC29DB700CB818B /* fnv.cpp in Sources */,
+				ED8623101AC29DB700CB818B /* mainloop.cpp in Sources */,
+				ED8623091AC29DB600CB818B /* application.cpp in Sources */,
+				ED86231C1AC29DB700CB818B /* consolekey.cpp in Sources */,
+				ED8623221AC29DB700CB818B /* jsonobject.cpp in Sources */,
+				ED86230A1AC29DB600CB818B /* colorutils.cpp in Sources */,
+				ED8623181AC29DB700CB818B /* jsoncomm.cpp in Sources */,
+				ED8623121AC29DB700CB818B /* serialqueue.cpp in Sources */,
+				ED8623071AC29DB600CB818B /* operationqueue.cpp in Sources */,
+				ED86231A1AC29DB700CB818B /* socketcomm.cpp in Sources */,
+				ED8623061AC29DB600CB818B /* i2c.cpp in Sources */,
+				ED8623211AC29DB700CB818B /* logger.cpp in Sources */,
+				ED8623131AC29DB700CB818B /* utils.cpp in Sources */,
+				ED86230C1AC29DB700CB818B /* error.cpp in Sources */,
+				ED86230F1AC29DB700CB818B /* iopin.cpp in Sources */,
+				ED8622C31AC29D4800CB818B /* p44ayabd.cpp in Sources */,
+				ED86231E1AC29DB700CB818B /* crc32.cpp in Sources */,
+				ED86230D1AC29DB700CB818B /* fdcomm.cpp in Sources */,
+				ED8623141AC29DB700CB818B /* jsonrpccomm.cpp in Sources */,
+				ED8623261AC2EF4E00CB818B /* ayabcomm.cpp in Sources */,
+				ED86231F1AC29DB700CB818B /* p44obj.cpp in Sources */,
+				ED8623111AC29DB700CB818B /* serialcomm.cpp in Sources */,
+				ED8623081AC29DB600CB818B /* analogio.cpp in Sources */,
+				ED86230E1AC29DB700CB818B /* gpio.cpp in Sources */,
+				ED86230B1AC29DB600CB818B /* digitalio.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		ED8622C41AC29D4800CB818B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"$(PROJECT_DIR)/src",
+				);
+				LIBRARY_SEARCH_PATHS = "\"/usr/local/lib\"";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		ED8622C51AC29D4800CB818B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"$(PROJECT_DIR)/src",
+				);
+				LIBRARY_SEARCH_PATHS = "\"/usr/local/lib\"";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		ED8622C71AC29D4800CB818B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = "${inherited}";
+				LIBRARY_SEARCH_PATHS = "${inherited}";
+				OTHER_LDFLAGS = (
+					"-ljson-c",
+					"-lpng",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		ED8622C81AC29D4800CB818B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = "${inherited}";
+				LIBRARY_SEARCH_PATHS = "${inherited}";
+				OTHER_LDFLAGS = (
+					"-ljson-c",
+					"-lpng",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		ED8622BA1AC29D4800CB818B /* Build configuration list for PBXProject "p44ayabd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ED8622C41AC29D4800CB818B /* Debug */,
+				ED8622C51AC29D4800CB818B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ED8622C61AC29D4800CB818B /* Build configuration list for PBXNativeTarget "p44ayabd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ED8622C71AC29D4800CB818B /* Debug */,
+				ED8622C81AC29D4800CB818B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = ED8622B71AC29D4800CB818B /* Project object */;
+}
