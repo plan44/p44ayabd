@@ -272,16 +272,17 @@ ssize_t AyabComm::acceptExtraBytes(size_t aNumBytes, uint8_t *aBytes)
     rowresponse[1] = nextRequestRow; // answer for requested row
     if (row) {
       // we got a row to knit, fill in bits
-      if (LOGENABLED(LOG_INFO)) {
+      if (LOGENABLED(LOG_NOTICE)) {
         string rs;
         for (int i=0; i<row->rowSize; i++) {
           rs += row->rowData[i] ? 'X' : '.';
         }
-        LOG(LOG_INFO,"Row No. %4d : %s\n", rowCount, rs.c_str());
+        LOG(LOG_NOTICE,"Row No. %4d : %s\n", rowCount, rs.c_str());
       }
       // MSByte contains the first needle in bit0, the eigth needle in bit7, the ninth needle is bit0 in second byte, etc.
       for (int i=0; i<row->rowSize; i++) {
-        if (row->rowData[i]) {
+        // inverse direction
+        if (row->rowData[row->rowSize-1-i]) {
           int j = i+firstNeedle;
           rowresponse[2+(j>>3)] |= (0x01 << (j & 0x07));
         }
