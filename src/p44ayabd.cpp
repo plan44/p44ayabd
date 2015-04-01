@@ -56,6 +56,8 @@ public:
       { 'l', "loglevel",        true,  "level;set max level of log message detail to show on stderr" },
       { 'W', "jsonapiport",     true,  "port;server port number for JSON API" },
       { 0  , "jsonapinonlocal", false, "allow connection to JSON API from non-local clients" },
+      { 0  , "png",             true,  "png_file;PNG file to knit" },
+      { 0  , "ayabconnection",  true,  "serial_if;serial interface where AYAB is connected (/device or IP:port)" },
       { 'h', "help",            false, "show this text" },
       { 0, NULL } // list terminator
     };
@@ -82,64 +84,19 @@ public:
 
   virtual void initialize()
   {
-//    // TODO: set up API
-//    // - open a PNG file
-//    FILE *fp = fopen("/Users/luz/Documents/plan44/Projekte/Guerilla-Knitting-Thalwil/p44ayabd/imgs/test.png", "rb");
-//    if (!fp) {
-//      terminateApp(SysError::errNo());
-//      return;
-//    }
-//    // - read the header
-//    const size_t headerSize = 8;
-//    uint8_t header[headerSize];
-//    ssize_t hb = fread(header, 1, headerSize, fp);
-//    // - check the header
-//    if (png_sig_cmp(header, 0, hb)) {
-//      terminateApp(WebError::webError(415, "file is not a PNG image"));
-//      return;
-//    }
-//    // - create info structures
-//    png_structp png_ptr = png_create_read_struct(
-//      PNG_LIBPNG_VER_STRING,
-//      NULL, //%%% (png_voidp)user_error_ptr,
-//      NULL, //%%% user_error_fn,
-//      NULL //%%% user_warning_fn
-//    );
-//    if (!png_ptr) {
-//      terminateApp(WebError::webError(500, "png_create_read_struct"));
-//      return;
-//    }
-//    png_infop info_ptr = png_create_info_struct(png_ptr);
-//    if (!info_ptr) {
-//      png_destroy_read_struct(
-//        &png_ptr,
-//        (png_infopp)NULL,
-//        (png_infopp)NULL
-//      );
-//      terminateApp(WebError::webError(500, "png_create_info_struct"));
-//      return;
-//    }
-//    png_infop end_info = png_create_info_struct(png_ptr);
-//    if (!end_info) {
-//      png_destroy_read_struct(
-//        &png_ptr,
-//        (png_infopp)NULL,
-//        (png_infopp)NULL
-//      );
-//      terminateApp(WebError::webError(500, "png_create_info_struct"));
-//      return;
-//    }
-//    // - init IO
-//    png_init_io(png_ptr, fp);
-//    png_set_sig_bytes(png_ptr, (int)hb);
-
 
     /* Initialize the 'png_image' structure. */
     memset(&image, 0, (sizeof image));
     image.version = PNG_IMAGE_VERSION;
 
-    /* The first argument is the file to read: */
-    if (png_image_begin_read_from_file(&image, "/Users/luz/Documents/plan44/Projekte/Guerilla-Knitting-Thalwil/p44ayabd/imgs/test.png") != 0)
+    string pngfile;
+    if (!getStringOption("png", pngfile)) {
+      terminateApp(TextError::err("Missing PNG file to knit"));
+      return;
+    }
+
+    // read image
+    if (png_image_begin_read_from_file(&image, pngfile.c_str()) != 0)
     {
 
       /* Set the format in which to read the PNG file; this code chooses a
@@ -204,12 +161,19 @@ public:
           fprintf(stdout, "\n");
         }
         // start knitting it
-        // - height of image is width of knit
-        ayabComm = AyabCommPtr(new AyabComm(MainLoop::currentMainLoop()));
+        // - set interface
+        string ayabconnection;
+        if (getStringOption("ayabconnection", ayabconnection)) {
+          ayabComm = AyabCommPtr(new AyabComm(MainLoop::currentMainLoop()));
 //        ayabComm->setConnectionSpecification("/dev/cu.usbmodem14241", 2109);
-        ayabComm->setConnectionSpecification("/dev/cu.usbmodem1421", 2109);
-        sleep(3);
-        initiateKnitting();
+//        ayabComm->setConnectionSpecification("/dev/cu.usbmodem1421", 2109);
+          ayabComm->setConnectionSpecification(ayabconnection.c_str(), 2109);
+          sleep(3);
+          initiateKnitting();
+        }
+        else {
+          terminateApp(TextError::err("no connection specified for AYAB"));
+        }
         return;
       }
       else {
@@ -221,13 +185,14 @@ public:
       terminateApp(TextError::err("pngtopng: error: %s", image.message));
     }
     else {
-      terminateApp(TextError::err("could not open PNG file"));
+      terminateApp(TextError::err("could not open PNG file %s", pngfile.c_str()));
     }
   };
 
 
   void initiateKnitting()
   {
+    // height of image is width of knit
     if (!ayabComm->startKnittingJob(100-image.height/2, image.height, boost::bind(&P44ayabd::rowCallBack, this, _1, _2))) {
       //terminateApp(TextError::err("startKnittingJob failed"));
       MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
