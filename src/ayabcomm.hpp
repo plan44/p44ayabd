@@ -67,6 +67,9 @@ namespace p44 {
   {
     typedef SerialOperationQueue inherited;
 
+    bool simulated; ///< if set, AYAB is simulated on console
+    bool fullspeedsim; ///< if set, entire knit job is run through automatically quickly
+
     uint16_t firstNeedle;
     uint16_t width;
     AyabRowCB rowCallBack;
@@ -103,6 +106,10 @@ namespace p44 {
 
     void ayabVersionResponseHandler(ErrorPtr aError);
     void ayabStartedResponseHandler(ErrorPtr aError);
+
+    void sendNextRow();
+
+    bool simulationControlKeyHandler(char aKey);
 
   };
 
