@@ -64,15 +64,19 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--png &quot;/Users/luz/Documents/plan44/Projekte/Guerilla-Knitting-Thalwil/p44ayabd/imgs/test.png&quot;"
+            argument = "--knitpng &quot;/Users/luz/Documents/plan44/Projekte/Guerilla-Knitting-Thalwil/p44ayabd/imgs/test.png&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--ayabconnection 192.168.59.72:2109"
-            isEnabled = "YES">
+            argument = "--ayabconnection 192.168.59.75:2109"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--ayabconnection /dev/cu.usbmodem1421"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--ayabconnection simulation"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

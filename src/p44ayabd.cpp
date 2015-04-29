@@ -40,11 +40,14 @@ class P44ayabd : public CmdLineApp
 
   PatternContainerPtr pattern;
 
+  bool apiMode; ///< set if in API mode (means working as daemon, not quitting when job is done)
+
 public:
 
-  P44ayabd()
+  P44ayabd() :
+    apiMode(false)
   {
-  }
+  };
 
 
   virtual int main(int argc, char **argv)
@@ -55,7 +58,7 @@ public:
       { 'l', "loglevel",        true,  "level;set max level of log message detail to show on stderr" },
       { 'W', "jsonapiport",     true,  "port;server port number for JSON API" },
       { 0  , "jsonapinonlocal", false, "allow connection to JSON API from non-local clients" },
-      { 0  , "png",             true,  "png_file;PNG file to knit" },
+      { 0  , "knitpng",         true,  "png_file;simple mode: just knit specified PNG file and then exit" },
       { 0  , "ayabconnection",  true,  "serial_if;serial interface where AYAB is connected (/device or IP:port - or 'simulation' for test w/o actual AYAB)" },
       { 'h', "help",            false, "show this text" },
       { 0, NULL } // list terminator
@@ -85,30 +88,40 @@ public:
   {
     ErrorPtr err;
 
-    string pngfile;
-    if (!getStringOption("png", pngfile)) {
-      terminateApp(TextError::err("Missing PNG file to knit"));
-      return;
+    // get AYAB connection
+    // - set interface
+    string ayabconnection;
+    if (getStringOption("ayabconnection", ayabconnection)) {
+      ayabComm = AyabCommPtr(new AyabComm(MainLoop::currentMainLoop()));
+      ayabComm->setConnectionSpecification(ayabconnection.c_str(), 2109);
     }
-    // read image
-    pattern = PatternContainerPtr(new PatternContainer);
-    err = pattern->readPNGfromFile(pngfile.c_str());
-    if (Error::isOK(err)) {
-      // start knitting it
-      // - set interface
-      string ayabconnection;
-      if (getStringOption("ayabconnection", ayabconnection)) {
-        ayabComm = AyabCommPtr(new AyabComm(MainLoop::currentMainLoop()));
-        ayabComm->setConnectionSpecification(ayabconnection.c_str(), 2109);
+    else {
+      terminateApp(TextError::err("no connection specified for AYAB"));
+    }
+    // - start JSON API
+    // TODO: %%% tbd
+
+    // check mode
+    string pngfile;
+    if (getStringOption("knitpng", pngfile)) {
+      // simple mode: just knit a PNG file passed via command line
+      LOG(LOG_NOTICE, "Simple mode - knitting single PNG file: %s\n", pngfile.c_str());
+      apiMode = false;
+      pattern = PatternContainerPtr(new PatternContainer);
+      err = pattern->readPNGfromFile(pngfile.c_str());
+      if (Error::isOK(err)) {
+        // start knitting it
         sleep(3);
         initiateKnitting();
       }
       else {
-        terminateApp(TextError::err("no connection specified for AYAB"));
+        terminateApp(err);
       }
     }
     else {
-      terminateApp(err);
+      // %%% API mode
+      apiMode = true;
+      terminateApp(TextError::err("API mode not yet implemented"));
     }
   };
 
@@ -120,6 +133,13 @@ public:
     if (!ayabComm->startKnittingJob(100-w/2, w, boost::bind(&P44ayabd::rowCallBack, this, _1, _2))) {
       MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
     }
+  }
+
+
+  void doneSimpleMode()
+  {
+    LOG(LOG_NOTICE, "Done knitting single PNG\n");
+    terminateApp(EXIT_SUCCESS);
   }
 
 
@@ -141,6 +161,9 @@ public:
           row->setRowPixel(y, pattern->grayAt(aRowNum, y)<128);
         }
       }
+    }
+    if (!row && !apiMode) {
+      MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::doneSimpleMode, this), 2*Second);
     }
     return row;
   };
