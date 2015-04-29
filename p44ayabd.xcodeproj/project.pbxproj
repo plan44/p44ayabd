@@ -34,6 +34,7 @@
 		ED8623211AC29DB700CB818B /* logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8623001AC29DB600CB818B /* logger.cpp */; };
 		ED8623221AC29DB700CB818B /* jsonobject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8623021AC29DB600CB818B /* jsonobject.cpp */; };
 		ED8623261AC2EF4E00CB818B /* ayabcomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8623241AC2EF4E00CB818B /* ayabcomm.cpp */; };
+		EDA79BBF1AF12667004EDEE1 /* patterncontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EDA79BBD1AF12667004EDEE1 /* patterncontainer.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -113,6 +114,8 @@
 		ED8623051AC29DB600CB818B /* gpio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gpio.h; sourceTree = "<group>"; };
 		ED8623241AC2EF4E00CB818B /* ayabcomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ayabcomm.cpp; sourceTree = "<group>"; };
 		ED8623251AC2EF4E00CB818B /* ayabcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ayabcomm.hpp; sourceTree = "<group>"; };
+		EDA79BBD1AF12667004EDEE1 /* patterncontainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = patterncontainer.cpp; sourceTree = "<group>"; };
+		EDA79BBE1AF12667004EDEE1 /* patterncontainer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = patterncontainer.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +151,8 @@
 				ED8622C91AC29D7A00CB818B /* p44utils */,
 				ED8623241AC2EF4E00CB818B /* ayabcomm.cpp */,
 				ED8623251AC2EF4E00CB818B /* ayabcomm.hpp */,
+				EDA79BBD1AF12667004EDEE1 /* patterncontainer.cpp */,
+				EDA79BBE1AF12667004EDEE1 /* patterncontainer.hpp */,
 				ED8622C21AC29D4800CB818B /* p44ayabd.cpp */,
 			);
 			path = src;
@@ -290,6 +295,7 @@
 				ED86231A1AC29DB700CB818B /* socketcomm.cpp in Sources */,
 				ED8623061AC29DB600CB818B /* i2c.cpp in Sources */,
 				ED8623211AC29DB700CB818B /* logger.cpp in Sources */,
+				EDA79BBF1AF12667004EDEE1 /* patterncontainer.cpp in Sources */,
 				ED8623131AC29DB700CB818B /* utils.cpp in Sources */,
 				ED86230C1AC29DB700CB818B /* error.cpp in Sources */,
 				ED86230F1AC29DB700CB818B /* iopin.cpp in Sources */,

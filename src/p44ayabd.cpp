@@ -22,8 +22,8 @@
 #include "application.hpp"
 
 #include "ayabcomm.hpp"
+#include "patterncontainer.hpp"
 
-#include <png.h>
 
 using namespace p44;
 
@@ -36,10 +36,9 @@ class P44ayabd : public CmdLineApp
 {
   typedef CmdLineApp inherited;
 
-  // %%% tmp, move into PNG handler class later
-  png_image image; /* The control structure used by libpng */
-  png_bytep buffer;
   AyabCommPtr ayabComm;
+
+  PatternContainerPtr pattern;
 
 public:
 
@@ -57,7 +56,7 @@ public:
       { 'W', "jsonapiport",     true,  "port;server port number for JSON API" },
       { 0  , "jsonapinonlocal", false, "allow connection to JSON API from non-local clients" },
       { 0  , "png",             true,  "png_file;PNG file to knit" },
-      { 0  , "ayabconnection",  true,  "serial_if;serial interface where AYAB is connected (/device or IP:port)" },
+      { 0  , "ayabconnection",  true,  "serial_if;serial interface where AYAB is connected (/device or IP:port - or 'simulation' for test w/o actual AYAB)" },
       { 'h', "help",            false, "show this text" },
       { 0, NULL } // list terminator
     };
@@ -84,108 +83,32 @@ public:
 
   virtual void initialize()
   {
-
-    /* Initialize the 'png_image' structure. */
-    memset(&image, 0, (sizeof image));
-    image.version = PNG_IMAGE_VERSION;
+    ErrorPtr err;
 
     string pngfile;
     if (!getStringOption("png", pngfile)) {
       terminateApp(TextError::err("Missing PNG file to knit"));
       return;
     }
-
     // read image
-    if (png_image_begin_read_from_file(&image, pngfile.c_str()) != 0)
-    {
-
-      /* Set the format in which to read the PNG file; this code chooses a
-       * simple sRGB format with a non-associated alpha channel, adequate to
-       * store most images.
-       */
-      image.format = PNG_FORMAT_GRAY;
-
-      /* Now allocate enough memory to hold the image in this format; the
-       * PNG_IMAGE_SIZE macro uses the information about the image (width,
-       * height and format) stored in 'image'.
-       */
-      buffer = (png_bytep)malloc(PNG_IMAGE_SIZE(image));
-      LOG(LOG_INFO, "Image size in bytes = %d\n", PNG_IMAGE_SIZE(image));
-      LOG(LOG_INFO, "Image width = %d\n", image.width);
-      LOG(LOG_INFO, "Image height = %d\n", image.height);
-      LOG(LOG_INFO, "Image width*height = %d\n", image.height*image.width);
-
-
-      /* If enough memory was available read the image in the desired format
-       * then write the result out to the new file.  'background' is not
-       * necessary when reading the image because the alpha channel is
-       * preserved; if it were to be removed, for example if we requested
-       * PNG_FORMAT_RGB, then either a solid background color would have to
-       * be supplied or the output buffer would have to be initialized to the
-       * actual background of the image.
-       *
-       * The fourth argument to png_image_finish_read is the 'row_stride' -
-       * this is the number of components allocated for the image in each
-       * row.  It has to be at least as big as the value returned by
-       * PNG_IMAGE_ROW_STRIDE, but if you just allocate space for the
-       * default, minimum, size using PNG_IMAGE_SIZE as above you can pass
-       * zero.
-       *
-       * The final argument is a pointer to a buffer for the colormap;
-       * colormaps have exactly the same format as a row of image pixels (so
-       * you choose what format to make the colormap by setting
-       * image.format).  A colormap is only returned if
-       * PNG_FORMAT_FLAG_COLORMAP is also set in image.format, so in this
-       * case NULL is passed as the final argument.  If you do want to force
-       * all images into an index/color-mapped format then you can use:
-       *
-       *    PNG_IMAGE_COLORMAP_SIZE(image)
-       *
-       * to find the maximum size of the colormap in bytes.
-       */
-      if (
-        buffer != NULL &&
-        png_image_finish_read(
-          &image,
-          NULL /*background*/,
-          buffer,
-          0/*row_stride*/,
-          NULL/*colormap*/
-        ) != 0
-      ) {
-        // image read ok
-        for (int x=0; x<image.width; x++) {
-          for (int y=image.height-1; y>=0; --y) {
-            fputc(buffer[y*image.width+x]<128 ? 'X' : '.', stdout);
-          }
-          fprintf(stdout, "\n");
-        }
-        // start knitting it
-        // - set interface
-        string ayabconnection;
-        if (getStringOption("ayabconnection", ayabconnection)) {
-          ayabComm = AyabCommPtr(new AyabComm(MainLoop::currentMainLoop()));
-//        ayabComm->setConnectionSpecification("/dev/cu.usbmodem14241", 2109);
-//        ayabComm->setConnectionSpecification("/dev/cu.usbmodem1421", 2109);
-          ayabComm->setConnectionSpecification(ayabconnection.c_str(), 2109);
-          sleep(3);
-          initiateKnitting();
-        }
-        else {
-          terminateApp(TextError::err("no connection specified for AYAB"));
-        }
-        return;
+    pattern = PatternContainerPtr(new PatternContainer);
+    err = pattern->readPNGfromFile(pngfile.c_str());
+    if (Error::isOK(err)) {
+      // start knitting it
+      // - set interface
+      string ayabconnection;
+      if (getStringOption("ayabconnection", ayabconnection)) {
+        ayabComm = AyabCommPtr(new AyabComm(MainLoop::currentMainLoop()));
+        ayabComm->setConnectionSpecification(ayabconnection.c_str(), 2109);
+        sleep(3);
+        initiateKnitting();
       }
       else {
-        free(buffer);
+        terminateApp(TextError::err("no connection specified for AYAB"));
       }
-      /* Something went wrong reading or writing the image.  libpng stores a
-       * textual message in the 'png_image' structure:
-       */
-      terminateApp(TextError::err("pngtopng: error: %s", image.message));
     }
     else {
-      terminateApp(TextError::err("could not open PNG file %s", pngfile.c_str()));
+      terminateApp(err);
     }
   };
 
@@ -193,8 +116,8 @@ public:
   void initiateKnitting()
   {
     // height of image is width of knit
-    if (!ayabComm->startKnittingJob(100-image.height/2, image.height, boost::bind(&P44ayabd::rowCallBack, this, _1, _2))) {
-      //terminateApp(TextError::err("startKnittingJob failed"));
+    int w = pattern->width();
+    if (!ayabComm->startKnittingJob(100-w/2, w, boost::bind(&P44ayabd::rowCallBack, this, _1, _2))) {
       MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
     }
   }
@@ -209,12 +132,13 @@ public:
       MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
     }
     else {
-      if (aRowNum<image.width) {
+      if (aRowNum<pattern->length()) {
         // there is a row, return it
         row = AyabRowPtr(new AyabRow);
-        row->setRowSize(image.height);
-        for (int y=image.height-1; y>=0; --y) {
-          row->setRowPixel(y, buffer[y*image.width+aRowNum]<128);
+        row->setRowSize(pattern->width());
+        int w = pattern->width();
+        for (int y=w-1; y>=0; --y) {
+          row->setRowPixel(y, pattern->grayAt(aRowNum, y)<128);
         }
       }
     }
