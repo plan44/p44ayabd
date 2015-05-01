@@ -35,6 +35,7 @@
 		ED8623221AC29DB700CB818B /* jsonobject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8623021AC29DB600CB818B /* jsonobject.cpp */; };
 		ED8623261AC2EF4E00CB818B /* ayabcomm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8623241AC2EF4E00CB818B /* ayabcomm.cpp */; };
 		EDA79BBF1AF12667004EDEE1 /* patterncontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EDA79BBD1AF12667004EDEE1 /* patterncontainer.cpp */; };
+		EDB1E2A31AF3A60D0013A92D /* patternqueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EDB1E2A11AF3A60D0013A92D /* patternqueue.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -116,6 +117,8 @@
 		ED8623251AC2EF4E00CB818B /* ayabcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ayabcomm.hpp; sourceTree = "<group>"; };
 		EDA79BBD1AF12667004EDEE1 /* patterncontainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = patterncontainer.cpp; sourceTree = "<group>"; };
 		EDA79BBE1AF12667004EDEE1 /* patterncontainer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = patterncontainer.hpp; sourceTree = "<group>"; };
+		EDB1E2A11AF3A60D0013A92D /* patternqueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = patternqueue.cpp; sourceTree = "<group>"; };
+		EDB1E2A21AF3A60D0013A92D /* patternqueue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = patternqueue.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,6 +156,8 @@
 				ED8623251AC2EF4E00CB818B /* ayabcomm.hpp */,
 				EDA79BBD1AF12667004EDEE1 /* patterncontainer.cpp */,
 				EDA79BBE1AF12667004EDEE1 /* patterncontainer.hpp */,
+				EDB1E2A11AF3A60D0013A92D /* patternqueue.cpp */,
+				EDB1E2A21AF3A60D0013A92D /* patternqueue.hpp */,
 				ED8622C21AC29D4800CB818B /* p44ayabd.cpp */,
 			);
 			path = src;
@@ -295,6 +300,7 @@
 				ED86231A1AC29DB700CB818B /* socketcomm.cpp in Sources */,
 				ED8623061AC29DB600CB818B /* i2c.cpp in Sources */,
 				ED8623211AC29DB700CB818B /* logger.cpp in Sources */,
+				EDB1E2A31AF3A60D0013A92D /* patternqueue.cpp in Sources */,
 				EDA79BBF1AF12667004EDEE1 /* patterncontainer.cpp in Sources */,
 				ED8623131AC29DB700CB818B /* utils.cpp in Sources */,
 				ED86230C1AC29DB700CB818B /* error.cpp in Sources */,

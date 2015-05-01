@@ -21,7 +21,6 @@
 
 #include "patterncontainer.hpp"
 
-#include <png.h>
 
 using namespace p44;
 

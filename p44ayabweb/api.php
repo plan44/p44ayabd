@@ -15,7 +15,8 @@ $p44ayabd_port = 9999;
 // { "method" : "POST"|"PUT", "uri" : "/myuri", ["uri_params":{ ... }] "data" : <{ JSON payload from PUT or POST }>}
 
 $method = $_SERVER['REQUEST_METHOD'];
-$uri = $_SERVER['SCRIPT_NAME'];
+$uri = '';
+if (isset($_SERVER['PATH_INFO'])) $uri = $_SERVER['PATH_INFO'];
 $uri_params = false;
 $data = false;
 // if there are CGI params in the URI, put them into uri_params

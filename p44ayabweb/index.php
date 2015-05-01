@@ -12,20 +12,19 @@ $imagequeuedir = $_SERVER['DOCUMENT_ROOT'] . $imagequeueurl;
 
 // init state
 $errormessage = '';
-$queuefiles = array();
-
+$queue = array();
 
 /// @param $aJsonRequest associative array representing JSON request to send to p44ayabd
-function ayabJsonCall($aJsonRequest)
+function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
 {
   global $p44ayabd_host, $p44ayabd_port;
   
   // wrap in mg44-compatible JSON
   $wrappedcall = array(
-    'method' => 'POST',
-    'uri' => '',
-    'data' => $aJsonRequest
+    'method' => $aAction ? 'POST' : 'GET',
+    'uri' => $aUri,
   );
+  if ($aJsonRequest!==false) $wrappedcall['data'] = $aJsonRequest;
   $request = json_encode($wrappedcall);  
   $fp = fsockopen($p44ayabd_host, $p44ayabd_port, $errno, $errstr, 10);
   if (!$fp) {
@@ -38,7 +37,7 @@ function ayabJsonCall($aJsonRequest)
     }
     fclose($fp);
     // convert JSON to associative php array
-    $result = json_decode($answer);
+    $result = json_decode($answer, true);
   }
   return $result; 
 }
@@ -99,6 +98,7 @@ function ayabJsonCall($aJsonRequest)
     }
       
     // check for new file upload
+    $qresp = false;
     if (isset($_FILES['newimage'])) {
       if (!isset($_FILES['newimage']['error'])) {
         $errormessage = sprintf('Problem uploading file');
@@ -116,14 +116,30 @@ function ayabJsonCall($aJsonRequest)
           $errormessage = sprintf('Cannot move file to queue (queue dir not writable by web server?)');
         }
         else {
-          // %%% hack
-          array_push($queuefiles, $queuefilename);
-          ayabJsonCall(array(
-            'command' => 'addToQueue',
-            'file' => $queuefilename            
-          ));
+          $qresp = ayabJsonCall('/queue', array(
+            'addFile' => $imagequeuedir . '/' . $queuefilename,
+            'webURL' => $imagequeueurl . '/' . $queuefilename            
+          ), true);
         }
       }
+    }
+    else {
+      $qresp = ayabJsonCall('/queue');
+    }
+  
+    // get queue info
+    if (isset($qresp['result'])) {
+      $queue = $qresp['result'];
+    }
+    // get cursor
+    $cresp = ayabJsonCall('/cursor');
+    $cursorImageIndex = 0;
+    $cursorOffsetInImage = 0;
+    if (isset($qresp['result'])) {
+      $cu = $qresp['result'];
+      $cursorImageIndex = $cu['entry'];
+      $cursorOffsetInImage = $cu['offset'];  
+      $cursorPos = $cu['position'];  
     }
   
       
@@ -131,8 +147,8 @@ function ayabJsonCall($aJsonRequest)
 
     <div id="queue">
       <?php
-      foreach ($queuefiles as $qi => $qf) {
-        echo ('<img id="' . $qi . '" src="' . $imagequeueurl . '/' . $qf . '"/>');
+      foreach ($queue as $qi => $qf) {
+        echo ('<img id="' . $qi . '" src="' . $qf['weburl'] . '"/>');
       }
       ?>
     </div>

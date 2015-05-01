@@ -22,12 +22,14 @@
 #include "application.hpp"
 
 #include "ayabcomm.hpp"
-#include "patterncontainer.hpp"
+#include "patternqueue.hpp"
 #include "jsoncomm.hpp"
 
 using namespace p44;
 
 #define DEFAULT_LOGLEVEL LOG_NOTICE
+#define DEFAULT_STATE_DIR "/tmp"
+
 #define MAINLOOP_CYCLE_TIME_uS 33333 // 33mS
 
 
@@ -42,13 +44,15 @@ class P44ayabd : public CmdLineApp
 
   bool apiMode; ///< set if in API mode (means working as daemon, not quitting when job is done)
   // API Server
-  SocketComm apiServer;
+  SocketCommPtr apiServer;
+
+  PatternQueuePtr patternQueue;
+  string statedir;
 
 public:
 
   P44ayabd() :
-    apiMode(false),
-    apiServer(MainLoop::currentMainLoop())
+    apiMode(false)
   {
   };
 
@@ -63,6 +67,7 @@ public:
       { 0  , "jsonapinonlocal", false, "allow connection to JSON API from non-local clients" },
       { 0  , "knitpng",         true,  "png_file;simple mode: just knit specified PNG file and then exit" },
       { 0  , "ayabconnection",  true,  "serial_if;serial interface where AYAB is connected (/device or IP:port - or 'simulation' for test w/o actual AYAB)" },
+      { 0  , "statedir",        true,  "path;writable directory where to store state information. Defaults to " DEFAULT_STATE_DIR },
       { 'h', "help",            false, "show this text" },
       { 0, NULL } // list terminator
     };
@@ -83,9 +88,14 @@ public:
     SETLOGLEVEL(loglevel);
     SETERRLEVEL(loglevel, false); // all diagnostics go to stderr
 
+    // state dir
+    statedir = DEFAULT_STATE_DIR;
+    getStringOption("statedir", statedir);
+
     // app now ready to run
     return run();
   }
+
 
   virtual void initialize()
   {
@@ -104,32 +114,35 @@ public:
     // check mode
     string p;
     if (getStringOption("knitpng", p)) {
-      // simple mode: just knit a PNG file passed via command line
-      LOG(LOG_NOTICE, "Simple mode - knitting single PNG file: %s\n", p.c_str());
-      apiMode = false;
-      pattern = PatternContainerPtr(new PatternContainer);
-      err = pattern->readPNGfromFile(p.c_str());
-      if (Error::isOK(err)) {
-        // start knitting it
-        sleep(3);
-        initiateKnitting();
-      }
-      else {
-        terminateApp(err);
-      }
+      simpleMode(p);
     }
     else if (getStringOption("jsonapiport", p)) {
       // API mode
       apiMode = true;
-      apiServer.setConnectionParams(NULL, p.c_str(), SOCK_STREAM, AF_INET);
-      apiServer.setAllowNonlocalConnections(getOption("jsonapinonlocal"));
-      apiServer.startServer(boost::bind(&P44ayabd::apiConnectionHandler, this, _1), 3);
+      // - create queue
+      patternQueue = PatternQueuePtr(new PatternQueue);
+      patternQueue->loadState(statedir.c_str());
+
+      // - start API server and wait for things to happen
+      apiServer = SocketCommPtr(new SocketComm(MainLoop::currentMainLoop()));
+      apiServer->setConnectionParams(NULL, p.c_str(), SOCK_STREAM, AF_INET);
+      apiServer->setAllowNonlocalConnections(getOption("jsonapinonlocal"));
+      apiServer->startServer(boost::bind(&P44ayabd::apiConnectionHandler, this, _1), 3);
     }
     else {
       // unknown mode
       terminateApp(TextError::err("Must use either --knitpng or --jsonapiport"));
     }
   };
+
+
+  void cleanup(int aExitCode)
+  {
+    // clean up
+    if (patternQueue) {
+      patternQueue->saveState(statedir.c_str(), true); // save anyway
+    }
+  }
 
 
   SocketCommPtr apiConnectionHandler(SocketCommPtr aServerSocketComm)
@@ -144,7 +157,7 @@ public:
   {
     ErrorPtr err;
     JsonObjectPtr answer = JsonObject::newObj();
-    // Decode request
+    // Decode mg44-style request (HTTP wrapped in JSON)
     if (Error::isOK(aError)) {
       LOG(LOG_INFO,"API request: %s\n", aRequest->c_strValue());
       JsonObjectPtr o;
@@ -163,42 +176,57 @@ public:
           data = aRequest->get("uri_params");
           if (data) action = true; // GET, but with query_params: treat like PUT/POST with data
         }
-        if (!action) {
-          // queries
-          if (uri=="") {
-            answer->add("error", JsonObject::newString("no uri: not yet"));
-          }
-          else {
-            answer->add("error", JsonObject::newString("with uri: not yet"));
-          }
-        }
-        else {
-          // get data
-          if (data) {
-            answer->add("dataecho", data);
-          }
-        }
+        // request elements now: uri and data
+        JsonObjectPtr r = processRequest(uri, data, action);
+        if (r) answer->add("result", r);
       }
     }
     else {
       LOG(LOG_ERR,"Invalid JSON request");
       answer->add("Error", JsonObject::newString(aError->description()));
     }
+    LOG(LOG_INFO,"API answer: %s\n", answer->c_strValue());
     err = aConnection->sendMessage(answer);
+    aConnection->closeAfterSend();
   }
-  
 
 
-
-
-
-  void initiateKnitting()
+  JsonObjectPtr processRequest(string aUri, JsonObjectPtr aData, bool aIsAction)
   {
-    // height of image is width of knit
-    int w = pattern->width();
-    if (!ayabComm->startKnittingJob(100-w/2, w, boost::bind(&P44ayabd::rowCallBack, this, _1, _2))) {
-      // repeat in case of failure
-      MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
+    if (aUri=="/queue") {
+      if (aIsAction) {
+        // check action to execute on queue
+        JsonObjectPtr o = aData->get("addFile");
+        if (o) {
+          JsonObjectPtr p = aData->get("webURL");
+          patternQueue->addFile(o->stringValue(), p->stringValue());
+        }
+      }
+      return patternQueue->queueEntriesJSON();
+    }
+    else if (aUri=="/cursor") {
+      return patternQueue->cursorStateJSON();
+    }
+    // unknown
+    return JsonObjectPtr();
+  }
+
+
+  void simpleMode(string aPNGfilename)
+  {
+    ErrorPtr err;
+    // simple mode: just knit a PNG file passed via command line
+    LOG(LOG_NOTICE, "Simple mode - knitting single PNG file: %s\n", aPNGfilename.c_str());
+    apiMode = false;
+    pattern = PatternContainerPtr(new PatternContainer);
+    err = pattern->readPNGfromFile(aPNGfilename.c_str());
+    if (Error::isOK(err)) {
+      // start knitting it
+      sleep(3);
+      initiateKnitting();
+    }
+    else {
+      terminateApp(err);
     }
   }
 
@@ -207,6 +235,19 @@ public:
   {
     LOG(LOG_NOTICE, "Done knitting single PNG\n");
     terminateApp(EXIT_SUCCESS);
+  }
+
+
+
+  void initiateKnitting()
+  {
+    // height of image is width of knit
+    int w = pattern->width();
+    if (!ayabComm->startKnittingJob(100-w/2, w, boost::bind(&P44ayabd::rowCallBack, this, _1, _2))) {
+      // repeat in case of immediate failure
+      // (Note: usually rowCallBack will be called with Error as long as machine is not ready)
+      MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
+    }
   }
 
 
