@@ -23,7 +23,7 @@
 
 #include "ayabcomm.hpp"
 #include "patterncontainer.hpp"
-
+#include "jsoncomm.hpp"
 
 using namespace p44;
 
@@ -41,11 +41,14 @@ class P44ayabd : public CmdLineApp
   PatternContainerPtr pattern;
 
   bool apiMode; ///< set if in API mode (means working as daemon, not quitting when job is done)
+  // API Server
+  SocketComm apiServer;
 
 public:
 
   P44ayabd() :
-    apiMode(false)
+    apiMode(false),
+    apiServer(MainLoop::currentMainLoop())
   {
   };
 
@@ -98,17 +101,14 @@ public:
     else {
       terminateApp(TextError::err("no connection specified for AYAB"));
     }
-    // - start JSON API
-    // TODO: %%% tbd
-
     // check mode
-    string pngfile;
-    if (getStringOption("knitpng", pngfile)) {
+    string p;
+    if (getStringOption("knitpng", p)) {
       // simple mode: just knit a PNG file passed via command line
-      LOG(LOG_NOTICE, "Simple mode - knitting single PNG file: %s\n", pngfile.c_str());
+      LOG(LOG_NOTICE, "Simple mode - knitting single PNG file: %s\n", p.c_str());
       apiMode = false;
       pattern = PatternContainerPtr(new PatternContainer);
-      err = pattern->readPNGfromFile(pngfile.c_str());
+      err = pattern->readPNGfromFile(p.c_str());
       if (Error::isOK(err)) {
         // start knitting it
         sleep(3);
@@ -118,12 +118,78 @@ public:
         terminateApp(err);
       }
     }
-    else {
-      // %%% API mode
+    else if (getStringOption("jsonapiport", p)) {
+      // API mode
       apiMode = true;
-      terminateApp(TextError::err("API mode not yet implemented"));
+      apiServer.setConnectionParams(NULL, p.c_str(), SOCK_STREAM, AF_INET);
+      apiServer.setAllowNonlocalConnections(getOption("jsonapinonlocal"));
+      apiServer.startServer(boost::bind(&P44ayabd::apiConnectionHandler, this, _1), 3);
+    }
+    else {
+      // unknown mode
+      terminateApp(TextError::err("Must use either --knitpng or --jsonapiport"));
     }
   };
+
+
+  SocketCommPtr apiConnectionHandler(SocketCommPtr aServerSocketComm)
+  {
+    JsonCommPtr conn = JsonCommPtr(new JsonComm(MainLoop::currentMainLoop()));
+    conn->setMessageHandler(boost::bind(&P44ayabd::apiRequestHandler, this, conn, _1, _2));
+    return conn;
+  }
+
+
+  void apiRequestHandler(JsonCommPtr aConnection, ErrorPtr aError, JsonObjectPtr aRequest)
+  {
+    ErrorPtr err;
+    JsonObjectPtr answer = JsonObject::newObj();
+    // Decode request
+    if (Error::isOK(aError)) {
+      LOG(LOG_INFO,"API request: %s\n", aRequest->c_strValue());
+      JsonObjectPtr o;
+      o = aRequest->get("method");
+      if (o) {
+        string method = o->stringValue();
+        string uri;
+        o = aRequest->get("uri");
+        if (o) uri = o->stringValue();
+        JsonObjectPtr data;
+        bool action = (method!="GET");
+        if (action) {
+          data = aRequest->get("data");
+        }
+        else {
+          data = aRequest->get("uri_params");
+          if (data) action = true; // GET, but with query_params: treat like PUT/POST with data
+        }
+        if (!action) {
+          // queries
+          if (uri=="") {
+            answer->add("error", JsonObject::newString("no uri: not yet"));
+          }
+          else {
+            answer->add("error", JsonObject::newString("with uri: not yet"));
+          }
+        }
+        else {
+          // get data
+          if (data) {
+            answer->add("dataecho", data);
+          }
+        }
+      }
+    }
+    else {
+      LOG(LOG_ERR,"Invalid JSON request");
+      answer->add("Error", JsonObject::newString(aError->description()));
+    }
+    err = aConnection->sendMessage(answer);
+  }
+  
+
+
+
 
 
   void initiateKnitting()
@@ -131,6 +197,7 @@ public:
     // height of image is width of knit
     int w = pattern->width();
     if (!ayabComm->startKnittingJob(100-w/2, w, boost::bind(&P44ayabd::rowCallBack, this, _1, _2))) {
+      // repeat in case of failure
       MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
     }
   }
@@ -161,9 +228,10 @@ public:
           row->setRowPixel(y, pattern->grayAt(aRowNum, y)<128);
         }
       }
-    }
-    if (!row && !apiMode) {
-      MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::doneSimpleMode, this), 2*Second);
+      // check for end of knit
+      if (!row && !apiMode) {
+        MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::doneSimpleMode, this), 2*Second);
+      }
     }
     return row;
   };
