@@ -22,6 +22,7 @@
 #include "ayabcomm.hpp"
 
 #include "consolekey.hpp"
+#include "application.hpp"
 
 using namespace p44;
 
@@ -190,6 +191,9 @@ bool AyabComm::simulationControlKeyHandler(char aKey)
     fullspeedsim = !fullspeedsim;
     if (fullspeedsim)
       sendNextRow();
+  }
+  else if (toupper(aKey)=='Q') {
+    Application::sharedApplication()->terminateApp(WebError::err(500,"Simulation mode, user hit Q key"));
   }
   return true; // fully handled
 }
