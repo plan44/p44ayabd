@@ -200,6 +200,7 @@ public:
         if (o) {
           JsonObjectPtr p = aData->get("webURL");
           patternQueue->addFile(o->stringValue(), p->stringValue());
+          patternQueue->saveState(statedir.c_str(), false);
         }
       }
       return patternQueue->queueEntriesJSON();

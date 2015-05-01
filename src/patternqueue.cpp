@@ -55,6 +55,7 @@ ErrorPtr PatternQueue::addFile(string aFilePath, string aWebURL)
     qe->patternLength = pattern->length();
     // - push into queue
     queue.push_back(qe);
+    stateDirty = true; // new entry, state is dirty now
     // - unload image itself if this is not the current image
     if (cursorEntry!=queue.size()-1) {
       // cursor is not in the newly added entry
