@@ -59,16 +59,233 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
 
     <title id="title_model">p44 AYAB web</title>
 
+    <script src="js/jquery-1.9.1.min.js"></script>
+
     <style type="text/css">
-      #queue { border: 1px solid red; margin: 20px; min-height: 20px;}
       
-      #queuecontrol { margin: 20px; }
+      #machine {
+        margin: 20px;
+      }
+      
+      #queue {
+        position: relative;
+        border: 1px solid red;
+        padding: 0;
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+      #queueimages {
+        padding: 0;
+        margin: 0;
+      }
+      #queueimages table {
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+      #queueimages td {
+        padding: 0;
+        margin: 0;
+      }
+      .deletebutton {
+        background-color: red;
+        text-align: center;
+        font-family: sans-serif;
+        color: white;
+        border: 0px solid black;
+        border-right: 1px solid white;
+      }
+      
+      #queueimages img {
+        margin: 0;
+        padding: 0;
+        display: block;
+      }
+      
+      #cursor {
+        position: absolute;
+        pointer-events: none;
+        border-right: 1px solid red;
+        background-color: rgba(131, 131, 131, 0.55);
+        margin: 0; padding: 0;
+        min-height: 20px;
+        width: 20px;
+        top: 0;
+        left: 0;
+      }
+
+      #usercursor {
+        position: absolute;
+        pointer-events: none;
+        border-right: 1px solid red;
+        background-color: rgba(255, 128, 128, 0.55);
+        margin: 0; padding: 0;
+        min-height: 20px;
+        width: 20px;
+        top: 0;
+        left: 0;
+      }
       
       #errormessage { font-weight: bold; color: red; }
+
+      #machinerestart { text-align: center; background-color: #ffb300; width: 100%; }
+      #machineready { text-align: center; background-color: #e0ff97; width: 100%; }
+
+
       
     </style>
 
     <script language="javascript1.2" type="text/javascript">
+
+      $(function()
+      {
+        // document ready
+        updateQueue();
+      });
+
+      var cursorUpdaterTimeout = 0;
+
+      var patternWidth = 0;
+
+      function updateMachineStatus()
+      {
+        $.ajax({
+          url: '/api.php/machine',
+          type: 'get',
+          dataType: 'json',
+          timeout: 3000
+        }).done(function(response) {
+          var status = response.result.status;
+          // update machine status
+          if (status<3) {
+            $('#machinerestart').show();
+            $('#machineready').hide();
+          }
+          else {
+            $('#machineready').show();            
+            $('#machinerestart').hide();
+          }
+        });
+      }
+
+
+      function updateCursor()
+      {
+        clearTimeout(cursorUpdaterTimeout);
+        $.ajax({
+          url: '/api.php/cursor',
+          type: 'get',
+          dataType: 'json',
+          timeout: 3000
+        }).done(function(response) {
+          var cursor = response.result;
+          $('#cursor').width(cursor.position);
+          $('#cursor').height(patternWidth);
+          $('#usercursor').height(patternWidth);          
+          updateMachineStatus();
+          // poll every 2 sec again
+          cursorUpdaterTimeout = setTimeout(function() { updateCursor(); }, 1000);
+        });
+      }
+
+      function queueClick(event)
+      {
+        var x = event.layerX; // layerX,Y = relative to the closest positioned element
+        var y = event.layerY;
+        $('#usercursor').show();
+        $('#usercursor').width(x);
+        $('#userCursorControls').show();
+      }
+      
+      
+      function userCursorApply()
+      {
+        clearTimeout(cursorUpdaterTimeout);
+        var query = {
+          setPosition : $('#usercursor').width()
+        };
+        $.ajax({
+          url: '/api.php/cursor',
+          type: 'post',
+          dataType: 'json',
+          data: JSON.stringify(query),
+          timeout: 3000
+        }).done(function(response) {
+          userCursorCancel();
+          updateCursor();
+        });
+      }
+
+      function userCursorCancel()
+      {
+        $('#usercursor').hide();
+        $('#userCursorControls').hide();
+      }
+
+
+
+      function updateQueue()
+      {
+        $.ajax({
+          url: '/api.php/queue',
+          type: 'get',
+          dataType: 'json',
+          timeout: 3000
+        }).done(function(response) {
+          var state = response.result;
+          var queue = state.queue;
+          patternWidth = state.patternWidth;
+          var queueHTML = '<table><tr onclick="javascript:queueClick(event);" height="' + patternWidth.toString() + '">';
+          for (var i in queue) {
+            var qe = queue[i];            
+            queueHTML += '<td width="' + qe.patternLength.toString() + '"><img id="' + i.toString() + '" src="' + qe.weburl + '"/></td>';
+          }
+          queueHTML += '<td width="100%"></td>'; // rest
+          queueHTML += '</tr><tr>';
+          for (var i in queue) {
+            queueHTML += '<td class="deletebutton" onClick="javascript:removeImg(' + i.toString() + ', true);">X</td>';
+            i++;
+          }
+          queueHTML += '</tr><table>';
+          $('#queueimages').html(queueHTML);
+          // also update cursor
+          updateCursor();
+        });
+      }
+      
+      function removeImg(index, withDelete)
+      {
+        var query = {
+          "removeFile" : index
+        };
+        if (withDelete) {
+          query['delete'] = true;
+        }
+        $.ajax({
+          url: '/api.php/queue',
+          type: 'post',
+          dataType: 'json',
+          data: JSON.stringify(query),
+          timeout: 3000
+        }).done(function(response) {
+          updateQueue();
+        });
+      }
+
+      function restartKnitting()
+      {
+        var query = {
+          "restart" : true
+        };
+        $.ajax({
+          url: '/api.php/machine',
+          type: 'post',
+          dataType: 'json',
+          data: JSON.stringify(query),
+          timeout: 3000
+        }).done(function(response) {
+          updateMachineStatus();
+        });
+      }
 
     </script>
 
@@ -123,44 +340,30 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         }
       }
     }
-    else {
-      $qresp = ayabJsonCall('/queue');
-    }
-  
-    // get queue info
-    if (isset($qresp['result'])) {
-      $queue = $qresp['result'];
-    }
-    // get cursor
-    $cresp = ayabJsonCall('/cursor');
-    $cursorImageIndex = 0;
-    $cursorOffsetInImage = 0;
-    if (isset($qresp['result'])) {
-      $cu = $qresp['result'];
-      $cursorImageIndex = $cu['entry'];
-      $cursorOffsetInImage = $cu['offset'];  
-      $cursorPos = $cu['position'];  
-    }
-  
-      
+        
     ?>
-
-    <div id="queue">
-      <?php
-      foreach ($queue as $qi => $qf) {
-        echo ('<img id="' . $qi . '" src="' . $qf['weburl'] . '"/>');
-      }
-      ?>
+    <div id="machine">
+      <div id="machineready" style="display:none;">Stricken läuft, Wagen hin-und-herschieben
+        <button onClick="javascript:restartKnitting();">Neustart</button>        
+      </div>
+      <div id="machinerestart" style="display:none;">Stricken neustarten: Wagen ganz nach links, dann rechts bis 2*beep</div>
+      <div id="queue">
+        <div id="queueimages"></div>
+        <div id="cursor"></div>
+        <div id="usercursor" style="display:none;"></div>
+      </div>
+      <div id="userCursorControls" style="display:none;">
+        <button id="userCursorApplyButton" onclick="javascript:userCursorApply();">Position setzen</button>
+        <button id="userCursorCancelButton" onclick="javascript:userCursorCancel();">Abbrechen</button>
+      </div>
+      <div id="queuecontrol">
+        <div id="errormessage"><?php echo($errormessage); ?></div>
+        <form enctype="multipart/form-data" action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="POST">
+          <label for="newimage">Neues Bild hinzufügen</label>
+          <input name="newimage" id="newimage" type="file" maxlength="50000" accept="image/png" onchange="javascript:this.form.submit();"/>
+        </form>
+      </div>
     </div>
-    <div id="queuecontrol">
-      <div id="errormessage"><?php echo($errormessage); ?></div>
-      <form enctype="multipart/form-data" action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="POST">
-        <label for="newimage">Set new image to knit</label>
-        <input name="newimage" id="newimage" type="file" maxlength="50000" accept="image/png"/>
-        <button type="submit">OK</button>
-      </form>
-    </div>
-
 
   </body>
 
