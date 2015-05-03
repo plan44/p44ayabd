@@ -112,6 +112,9 @@ namespace p44 {
     /// @return width of pattern queue
     int width() { return patternWidth; };
 
+    /// @param set new width of queue
+    ErrorPtr setWidth(int aWidth);
+
     /// get state as JSON
     JsonObjectPtr cursorStateJSON();
     JsonObjectPtr queueEntriesJSON();

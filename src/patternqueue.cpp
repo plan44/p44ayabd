@@ -42,6 +42,15 @@ void PatternQueue::clear()
 }
 
 
+ErrorPtr PatternQueue::setWidth(int aWidth)
+{
+  patternWidth = aWidth;
+  stateDirty = true;
+  return ErrorPtr();
+}
+
+
+
 ErrorPtr PatternQueue::addFile(string aFilePath, string aWebURL)
 {
   PatternContainerPtr pattern = PatternContainerPtr(new PatternContainer);
@@ -55,7 +64,7 @@ ErrorPtr PatternQueue::addFile(string aFilePath, string aWebURL)
     qe->pattern = pattern;
     qe->patternLength = pattern->length();
     // if queue was empty before, also set width
-    if (queue.size()==0) {
+    if (queue.size()==0 && patternWidth==0) {
       patternWidth = pattern->width();
     }
     // - push into queue

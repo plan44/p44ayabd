@@ -196,6 +196,13 @@ public:
             initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 1*Second);
           }
         }
+        else if (aData->get("setWidth", o)) {
+          err = patternQueue->setWidth(o->int32Value());
+          patternQueue->saveState(statedir.c_str(), false);
+          // also needs restart
+          MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
+          initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 1*Second);
+        }
         else {
           err = WebError::err(500, "Unknown action for /machine");
         }
