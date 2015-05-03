@@ -358,7 +358,6 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
     }
       
     // check for new file upload
-    $qresp = false;
     if (isset($_FILES['newimage'])) {
       if (!isset($_FILES['newimage']['error'])) {
         $errormessage = sprintf('Problem uploading file');
@@ -376,13 +375,80 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           $errormessage = sprintf('Cannot move file to queue (queue dir not writable by web server?)');
         }
         else {
-          $qresp = ayabJsonCall('/queue', array(
+          ayabJsonCall('/queue', array(
             'addFile' => $imagequeuedir . '/' . $queuefilename,
             'webURL' => $imagequeueurl . '/' . $queuefilename            
           ), true);
         }
       }
     }
+    else if (isset($_REQUEST['addnewtext'])) {
+      // get text
+      $text = $_REQUEST['newtext'];
+      // get text attributes
+      // - font
+      $fontname = 'Helvetica-Bold';
+      if (isset($_REQUEST['fontname']))
+        $fontname = $_REQUEST['fontname'];
+      // - size
+      $fontsize = 45;
+      if (isset($_REQUEST['fontsize']))
+        $fontsize = $_REQUEST['fontsize'];
+    
+      // get width (= text height)
+      $s = ayabJsonCall('/queue', false, false);
+      $state = $s['result'];
+      $patternWidth = $state['patternWidth'];
+
+          
+      // Create Imagick objects
+      $image = new Imagick();
+      $draw = new ImagickDraw();
+      $color = new ImagickPixel('black');
+      $background = new ImagickPixel('white');
+      
+      // Set Font properties
+      //$draw->setFont('Arial');
+      $draw->setFont($fontname);
+      $draw->setFontSize($fontsize);
+      $draw->setFillColor($color);
+      $draw->setStrokeAntialias(true);
+      $draw->setTextAntialias(true);
+      
+      // Get font metrics
+      $metrics = $image->queryFontMetrics($draw, $text);
+      
+      // draw the text
+      $topborder = 2;
+      $spaceatend = 5;
+      $draw->annotation(0, $topborder+$metrics['ascender'], $text);
+      
+      // create image of correct size
+      $image->newImage($spaceatend+$metrics['textWidth'], $topborder+$metrics['textHeight'], $background);
+      $image->setImageFormat('png');
+      $image->drawImage($draw);
+      
+      // save to queue dir
+      $queuefilename = strftime('%Y-%m-%d_%H.%M.%S') . '_generated_text';
+      file_put_contents($imagequeuedir . '/' . $queuefilename, $image);
+    
+      // add to queue
+      ayabJsonCall('/queue', array(
+        'addFile' => $imagequeuedir . '/' . $queuefilename,
+        'webURL' => $imagequeueurl . '/' . $queuefilename            
+      ), true);
+        
+    /*
+      // %%% just output for now
+      header("Content-Type: image/png"); 
+      echo $image;
+      exit(0);
+        
+    */
+    }
+
+
+    
         
     ?>
     <div id="machine">
@@ -400,13 +466,22 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         <button id="userCursorCancelButton" onclick="javascript:userCursorCancel();">Abbrechen</button>
       </div>
       <div id="queuecontrol">
+
         <div id="errormessage"><?php echo($errormessage); ?></div>
+
         <form enctype="multipart/form-data" action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="POST">
-          <label for="newimage">Neues Bild hinzufügen:</label>
-          <input name="newimage" id="newimage" type="file" maxlength="50000" accept="image/png" onchange="javascript:this.form.submit();"/>
+          <p><label for="newimage">Neues Bild hinzufügen:</label>
+          <input name="newimage" id="newimage" type="file" maxlength="50000" accept="image/png" onchange="javascript:this.form.submit();"/></p>
         </form>
-          <label for="patternWidth">Musterbreite:</label>
-        <input type="number" name="patternWidth" id="patternWidth"/>&nbsp;<button onClick="javascript:applyNewWidth()">Breite neu setzen</button>
+
+        <form action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="POST">
+          <p><label for="newtext">Neuen Text hinzufügen:</label>
+          <input name="newtext" id="newtext" />&nbsp;<button name="addnewtext" type="submit">Text hinzufügen</button></p>
+        </form>
+
+        <p><label for="patternWidth">Musterbreite:</label>
+        <input type="number" name="patternWidth" id="patternWidth"/>&nbsp;<button onClick="javascript:applyNewWidth()">Breite neu setzen</button></p>
+
       </div>
     </div>
 
