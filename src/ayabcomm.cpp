@@ -150,7 +150,8 @@ AyabComm::AyabComm(MainLoop &aMainLoop) :
   width(0),
   rowCallBack(NULL),
   rowCount(0),
-  nextRequestRow(0)
+  nextRequestRow(0),
+  status(ayabstatus_offline)
 {
 }
 
@@ -169,11 +170,14 @@ void AyabComm::setConnectionSpecification(const char *aConnectionSpec, uint16_t 
     // install console key to trigger rows
     ConsoleKeyManager::sharedKeyManager()->setKeyPressHandler(boost::bind(&AyabComm::simulationControlKeyHandler, this, _1));
     LOG(LOG_NOTICE, "SIMULATION MODE: press N to request next row, F to toggle full speed run\n");
+    status = ayabstatus_connected;
   }
   else {
     serialComm->setConnectionSpecification(aConnectionSpec, aDefaultPort, AYAB_BAUDRATE);
     // open connection so we can receive
-    serialComm->requestConnection();
+    if (serialComm->requestConnection()) {
+      status = ayabstatus_connected;
+    }
     // set accept buffer for re-assembling messages before processing
     setAcceptBuffer(4); // largest message is 4 bytes (2 + possibly CRLF)
   }
@@ -264,7 +268,6 @@ void AyabComm::ayabCmdResponseHandler(StatusCB aStatusCB, SerialOperationPtr aOp
       else if (resp==(AYABCMD_FROM_AYAB|AYABCMD_CONFIRM|AYABMSGID_START)) {
         uint8_t sta = ropP->getDataP()[1];
         LOG(LOG_INFO, "AYAB start status: %d\n", sta);
-        // TODO: %%% check success status
         if (sta!=1) {
           aError = TextError::err("AYAB start command failed");
         }
@@ -317,9 +320,13 @@ ssize_t AyabComm::acceptExtraBytes(size_t aNumBytes, uint8_t *aBytes)
 void AyabComm::sendNextRow()
 {
   // call back to get row data
-  AyabRowPtr row = rowCallBack(rowCount, ErrorPtr());
-  rowCount++;
+  AyabRowPtr row;
+  if (rowCallBack) {
+    row = rowCallBack(rowCount, ErrorPtr());
+    rowCount++;
+  }
   // send data or stop
+  status = ayabstatus_knitting;
   const int rowresponselen = 29;
   uint8_t rowresponse[rowresponselen];
   memset(rowresponse,0,rowresponselen); // init to default
@@ -350,6 +357,8 @@ void AyabComm::sendNextRow()
     fullspeedsim = false; // end full speed simulation at end of job
     // no more rows, send empty one with lastline flag set
     rowresponse[rowresponselen-2] = 1; // lastline
+    // back to ready
+    status = ayabstatus_ready;
   }
   // calculate CRC8
   // TODO: once AYAB actually checks CRC, we might need to adjust range of checked bytes and start value here
@@ -368,6 +377,7 @@ void AyabComm::sendNextRow()
 
 bool AyabComm::startKnittingJob(unsigned aFirstNeedle, unsigned aWidth, AyabRowCB aRowCB)
 {
+  status = ayabstatus_ready;
   // store params
   if (!aRowCB || aWidth<2 || aFirstNeedle+aWidth>200) {
     return false; // invalid parameters
@@ -391,6 +401,7 @@ void AyabComm::ayabVersionResponseHandler(ErrorPtr aError)
     return;
   }
   // version is ok, now configure
+  status = ayabstatus_ready;
   uint8_t cmd[3];
   cmd[0] = AYABCMD_FROM_HOST|AYABCMD_REQUEST|AYABMSGID_START;
   cmd[1] = firstNeedle; // first needle
@@ -408,4 +419,5 @@ void AyabComm::ayabStartedResponseHandler(ErrorPtr aError)
   rowCount = 0;
   nextRequestRow = 0; // start at 0, will wrap around after 255 rows
   // now, rowCallBack will be called whenever the machine wants a new row
+  status = ayabstatus_knitting;
 }

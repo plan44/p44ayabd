@@ -40,8 +40,6 @@ class P44ayabd : public CmdLineApp
 
   AyabCommPtr ayabComm;
 
-  PatternContainerPtr pattern;
-
   bool apiMode; ///< set if in API mode (means working as daemon, not quitting when job is done)
   // API Server
   SocketCommPtr apiServer;
@@ -49,10 +47,13 @@ class P44ayabd : public CmdLineApp
   PatternQueuePtr patternQueue;
   string statedir;
 
+  long initiateTicket;
+
 public:
 
   P44ayabd() :
-    apiMode(false)
+    apiMode(false),
+    initiateTicket(0)
   {
   };
 
@@ -111,23 +112,15 @@ public:
     else {
       terminateApp(TextError::err("no connection specified for AYAB"));
     }
+    // create queue
+    patternQueue = PatternQueuePtr(new PatternQueue);
     // check mode
     string p;
     if (getStringOption("knitpng", p)) {
-      simpleMode(p);
+      simpleModeStart(p);
     }
     else if (getStringOption("jsonapiport", p)) {
-      // API mode
-      apiMode = true;
-      // - create queue
-      patternQueue = PatternQueuePtr(new PatternQueue);
-      patternQueue->loadState(statedir.c_str());
-
-      // - start API server and wait for things to happen
-      apiServer = SocketCommPtr(new SocketComm(MainLoop::currentMainLoop()));
-      apiServer->setConnectionParams(NULL, p.c_str(), SOCK_STREAM, AF_INET);
-      apiServer->setAllowNonlocalConnections(getOption("jsonapinonlocal"));
-      apiServer->startServer(boost::bind(&P44ayabd::apiConnectionHandler, this, _1), 3);
+      apiModeStart(p);
     }
     else {
       // unknown mode
@@ -139,7 +132,7 @@ public:
   void cleanup(int aExitCode)
   {
     // clean up
-    if (patternQueue) {
+    if (patternQueue && apiMode) {
       patternQueue->saveState(statedir.c_str(), true); // save anyway
     }
   }
@@ -193,38 +186,114 @@ public:
 
   JsonObjectPtr processRequest(string aUri, JsonObjectPtr aData, bool aIsAction)
   {
-    if (aUri=="/queue") {
+    ErrorPtr err;
+    JsonObjectPtr o;
+    if (aUri=="/machine") {
+      if (aIsAction) {
+        if (aData->get("restart", o)) {
+          if (o->boolValue()) {
+            MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
+            initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 1*Second);
+          }
+        }
+        else {
+          err = WebError::err(500, "Unknown action for /machine");
+        }
+      }
+      else {
+        o = JsonObject::newObj();
+        o->add("status", JsonObject::newInt32(ayabComm->getStatus()));
+        return o;
+      }
+    }
+    else if (aUri=="/queue") {
       if (aIsAction) {
         // check action to execute on queue
-        JsonObjectPtr o = aData->get("addFile");
-        if (o) {
+        if (aData->get("addFile", o)) {
+          bool restartKnitting = patternQueue->endOfPattern(); // if we've been at the end of the pattern, we'll need to restart after loading new pattern
           JsonObjectPtr p = aData->get("webURL");
-          patternQueue->addFile(o->stringValue(), p->stringValue());
+          err = patternQueue->addFile(o->stringValue(), p->stringValue());
+          patternQueue->saveState(statedir.c_str(), false);
+          if (Error::isOK(err)) {
+            // restart needed?
+            if (restartKnitting) {
+              MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
+              initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 1*Second);
+            }
+          }
+        }
+        else if (aData->get("removeFile", o)) {
+          bool withDelete = false;
+          JsonObjectPtr del;
+          if (aData->get("delete", del)) {
+            withDelete = del->boolValue();
+          }
+          err = patternQueue->removeFile(o->int32Value(), withDelete);
+          patternQueue->saveState(statedir.c_str(), false);
+        }
+        else {
+          err = WebError::err(500, "Unknown action for /queue");
+        }
+      }
+      else {
+        // just GET - return queue
+        return patternQueue->queueStateJSON();
+      }
+    }
+    else if (aUri=="/cursor") {
+      if (aIsAction) {
+        // check action to execute on cursor
+        if (aData->get("setPosition", o)) {
+          patternQueue->moveCursor(o->int32Value(), false);
           patternQueue->saveState(statedir.c_str(), false);
         }
       }
-      return patternQueue->queueEntriesJSON();
+      else {
+        // just return current cursor position
+        return patternQueue->cursorStateJSON();
+      }
     }
-    else if (aUri=="/cursor") {
-      return patternQueue->cursorStateJSON();
+    else {
+      err = WebError::err(500, "Unknown URI");
     }
-    // unknown
-    return JsonObjectPtr();
+    // return error or ok
+    if (Error::isOK(err))
+      return JsonObjectPtr(); // ok
+    else {
+      JsonObjectPtr errorJson = JsonObject::newObj();
+      errorJson->add("error", JsonObject::newString(err->description()));
+      return errorJson;
+    }
   }
 
 
-  void simpleMode(string aPNGfilename)
+  void apiModeStart(string aAPIPort)
+  {
+    // API mode
+    apiMode = true;
+    // - load saved state
+    patternQueue->loadState(statedir.c_str());
+    // - start API server and wait for things to happen
+    apiServer = SocketCommPtr(new SocketComm(MainLoop::currentMainLoop()));
+    apiServer->setConnectionParams(NULL, aAPIPort.c_str(), SOCK_STREAM, AF_INET);
+    apiServer->setAllowNonlocalConnections(getOption("jsonapinonlocal"));
+    apiServer->startServer(boost::bind(&P44ayabd::apiConnectionHandler, this, _1), 3);
+    // start knitting whatever is in the queue
+    initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
+  }
+
+
+  void simpleModeStart(string aPNGfilename)
   {
     ErrorPtr err;
     // simple mode: just knit a PNG file passed via command line
     LOG(LOG_NOTICE, "Simple mode - knitting single PNG file: %s\n", aPNGfilename.c_str());
     apiMode = false;
-    pattern = PatternContainerPtr(new PatternContainer);
-    err = pattern->readPNGfromFile(aPNGfilename.c_str());
+    patternQueue->clear();
+    err = patternQueue->addFile(aPNGfilename, "single_PNG");
     if (Error::isOK(err)) {
       // start knitting it
-      sleep(3);
-      initiateKnitting();
+      initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
     }
     else {
       terminateApp(err);
@@ -243,11 +312,12 @@ public:
   void initiateKnitting()
   {
     // height of image is width of knit
-    int w = pattern->width();
+    int w = patternQueue->width();
     if (!ayabComm->startKnittingJob(100-w/2, w, boost::bind(&P44ayabd::rowCallBack, this, _1, _2))) {
       // repeat in case of immediate failure
       // (Note: usually rowCallBack will be called with Error as long as machine is not ready)
-      MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
+      MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
+      initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
     }
   }
 
@@ -257,18 +327,20 @@ public:
     AyabRowPtr row;
     if (!Error::isOK(aError)) {
       LOG(LOG_ERR, "Knitting job aborted with error: %s\n", aError->description().c_str());
-      // %%% restart
-      MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
+      // probably machine not yet ready - try restarting in a moment
+      MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
+      initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
     }
     else {
-      if (aRowNum<pattern->length()) {
+      if (!patternQueue->endOfPattern()) {
         // there is a row, return it
+        int w = patternQueue->width();
         row = AyabRowPtr(new AyabRow);
-        row->setRowSize(pattern->width());
-        int w = pattern->width();
+        row->setRowSize(w);
         for (int y=w-1; y>=0; --y) {
-          row->setRowPixel(y, pattern->grayAt(aRowNum, y)<128);
+          row->setRowPixel(y, patternQueue->grayAtCursor(y)<128);
         }
+        patternQueue->moveCursor(); // next
       }
       // check for end of knit
       if (!row && !apiMode) {

@@ -76,6 +76,15 @@ namespace p44 {
     uint8_t nextRequestRow; ///< next row number we expect a request for
     int rowCount; ///< overall row counter
 
+    typedef enum {
+      ayabstatus_offline,
+      ayabstatus_connected,
+      ayabstatus_ready,
+      ayabstatus_knitting
+    } AyabStatus;
+
+    AyabStatus status;
+
   public:
 
     AyabComm(MainLoop &aMainLoop);
@@ -92,6 +101,8 @@ namespace p44 {
     /// @param aRowCB is called once for every row, must return a AyabRow or nothing to end knitting job
     /// @return true if params ok, false otherwise
     bool startKnittingJob(unsigned aFirstNeedle, unsigned aWidth, AyabRowCB aRowCB);
+
+    AyabStatus getStatus() { return status; };
 
   protected:
 

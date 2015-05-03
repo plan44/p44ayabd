@@ -71,7 +71,9 @@ namespace p44 {
     PatternQueueVector queue;
     // the cursor
     int cursorEntry; ///< the entry where the cursor is currently in
-    int cursorPosition; ///< the position within the entry
+    int cursorOffset; ///< the position within the entry
+    // the width
+    int patternWidth;
 
 
   public:
@@ -87,16 +89,51 @@ namespace p44 {
     /// save the current state
     void saveState(const char *aStateDir, bool aAnyWay);
 
+    /// @return true if end of pattern reached (cursor at end of pattern queue)
+    bool endOfPattern();
+
+    /// @return position of cursor (units from beginning of pattern queue)
+    int cursorPosition();
+
+    /// @param index of image to get start position, -1 to get end of last image (= end of queue)
+    /// @return returns start pixel pos of image relative to beginning of the queue
+    int imageStartPos(int aImageIndex = -1);
+
+    /// Move cursor to new row
+    /// @param aNewPos relative or absolute new position
+    /// @param aRelative if set, aNewPos is relative to the current cursor position
+    /// @note default is to advance the cursor one position
+    void moveCursor(int aNewPos = 1, bool aRelative = true);
+
+    /// @param aAtWidth which pixel of the row
+    /// @return gray value from current cursor row
+    uint8_t grayAtCursor(int aAtWidth);
+
+    /// @return width of pattern queue
+    int width() { return patternWidth; };
+
     /// get state as JSON
     JsonObjectPtr cursorStateJSON();
     JsonObjectPtr queueEntriesJSON();
     JsonObjectPtr queueStateJSON();
 
     /// add a file to the queue
+    /// @param aFilePath the file system path to the file to add
+    /// @param aWebURL the (possibly partial) Web URL for the file
+    /// @return ok if the file could be loaded, error otherwise
     ErrorPtr addFile(string aFilePath, string aWebURL);
 
+    /// remove a file from the queue
+    /// @param aIndex queue index, 0...queue size-1
+    /// @param aDeleteFile actually delete the file from the file system
+    /// @return ok if the file could be removed, error otherwise
+    ErrorPtr removeFile(int aIndex, bool aDeleteFile);
+
+
   private:
-    
+
+    void loadPatternAtCursor();
+
   };
 
 
