@@ -345,7 +345,7 @@ public:
         row = AyabRowPtr(new AyabRow);
         row->setRowSize(w);
         for (int y=w-1; y>=0; --y) {
-          row->setRowPixel(y, patternQueue->grayAtCursor(y)<128);
+          row->setRowPixel(y, patternQueue->grayAtCursor(y)>128);
         }
         patternQueue->moveCursor(); // next
       }

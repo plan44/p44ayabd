@@ -119,7 +119,7 @@ uint8_t PatternContainer::grayAt(int aAtLenght, int aAtWidth)
     aAtLenght<0 || aAtLenght>=length() ||
     aAtWidth<0 || aAtWidth>=width()
   ) return 0; // no color
-  return pngBuffer[aAtWidth*length()+aAtLenght];
+  return 255-pngBuffer[aAtWidth*length()+aAtLenght]; // pixel information is amount of white, we want amount of black
 }
 
 
