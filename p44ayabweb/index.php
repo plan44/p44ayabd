@@ -85,13 +85,25 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       #queueimages td {
         padding: 0;
         margin: 0;
+        vertical-align: top;
+      }
+      .imageblock {
+        display: block;
       }
       .deletebutton {
         background-color: red;
         text-align: center;
         font-family: sans-serif;
         color: white;
-        border: 0px solid black;
+        border: 0px;
+        border-right: 1px solid white;
+      }
+      .currentsegment {
+        background-color: #e0ff97;
+        text-align: center;
+        font-family: sans-serif;
+        color: black;
+        border: 0px;
         border-right: 1px solid white;
       }
       
@@ -105,6 +117,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         position: absolute;
         pointer-events: none;
         border-right: 1px solid red;
+        border-bottom: 1px solid red;
         background-color: rgba(131, 131, 131, 0.55);
         margin: 0; padding: 0;
         min-height: 20px;
@@ -117,6 +130,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         position: absolute;
         pointer-events: none;
         border-right: 1px solid red;
+        border-bottom: 1px solid red;
         background-color: rgba(255, 128, 128, 0.55);
         margin: 0; padding: 0;
         min-height: 20px;
@@ -130,9 +144,9 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       #machinerestart { text-align: center; background-color: #ffb300; width: 100%; }
       #machineready { text-align: center; background-color: #e0ff97; width: 100%; }
 
-
-      
     </style>
+
+
 
     <script language="javascript1.2" type="text/javascript">
 
@@ -238,15 +252,24 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           for (var i in queue) {
             var qe = queue[i];            
             queueHTML += '<td width="' + qe.patternLength.toString() + '"><img id="' + i.toString() + '" src="' + qe.weburl + '"/></td>';
+//             queueHTML += '<td width="' + qe.patternLength.toString() + '" height="' + patternWidth + '" style="background-image:url(\'' + qe.weburl + '\');"/></td>';
+//             queueHTML += '<td style="min-width: ' + qe.patternLength.toString() + '; height: ' + patternWidth + '; background-image:url(\'' + qe.weburl + '\');"/></td>';
+/*
+             queueHTML +=
+               '<td width="' + qe.patternLength.toString() + '">' + 
+               '<div class:"imageblock" style="min-width: ' + qe.patternLength.toString() + '; min-height: ' + patternWidth + '; background-image:url(\'' + qe.weburl + '\');"/></div>' + 
+               '</td>';
+*/
           }
           queueHTML += '<td width="100%"></td>'; // rest
           queueHTML += '</tr><tr>';
           for (var i in queue) {
-            queueHTML += '<td class="deletebutton" onClick="javascript:removeImg(' + i.toString() + ', true);">X</td>';
+            queueHTML += '<td class="' + (i==state.cursor.entry ? 'currentsegment' : 'deletebutton')+ '" onClick="javascript:removeImg(' + i.toString() + ', true);">X</td>';
             i++;
           }
           queueHTML += '</tr><table>';
           $('#queueimages').html(queueHTML);
+          $('#patternWidth').val(patternWidth.toString());
           // also update cursor
           updateCursor();
         });
@@ -286,6 +309,26 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           updateMachineStatus();
         });
       }
+
+
+      function applyNewWidth()
+      {
+        var width = $('#patternWidth').val();
+        var query = {
+          "setWidth" : width
+        };
+        $.ajax({
+          url: '/api.php/machine',
+          type: 'post',
+          dataType: 'json',
+          data: JSON.stringify(query),
+          timeout: 3000
+        }).done(function(response) {
+          updateQueue();
+        });
+      }
+
+
 
     </script>
 
@@ -359,9 +402,11 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       <div id="queuecontrol">
         <div id="errormessage"><?php echo($errormessage); ?></div>
         <form enctype="multipart/form-data" action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="POST">
-          <label for="newimage">Neues Bild hinzufügen</label>
+          <label for="newimage">Neues Bild hinzufügen:</label>
           <input name="newimage" id="newimage" type="file" maxlength="50000" accept="image/png" onchange="javascript:this.form.submit();"/>
         </form>
+          <label for="patternWidth">Musterbreite:</label>
+        <input type="number" name="patternWidth" id="patternWidth"/>&nbsp;<button onClick="javascript:applyNewWidth()">Breite neu setzen</button>
       </div>
     </div>
 
