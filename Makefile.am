@@ -15,11 +15,11 @@ if RASPBERRYPI
 # This is an ugly hack, but I could not find a way to refer to the sysroot prefix for the -L path.
 # Note: the entire library situation is ugly, as toolchain is not complete and autoconf lib macros dont work.
 TOOLCHAIN_SYSROOT = /Volumes/xtools/arm-none-linux-gnueabi/arm-none-linux-gnueabi/sysroot
-p44ayabd_LDADD = $(PTHREAD_LIBS) -ljson-c -ldl -L${TOOLCHAIN_SYSROOT}/${libdir}/arm-linux-gnueabihf
+p44ayabd_LDADD = $(PTHREAD_LIBS) -lpng -ljson-c -ldl -L${TOOLCHAIN_SYSROOT}/${libdir}/arm-linux-gnueabihf
 else
 # automatic libs does not work right now due to commented out checks in autoconf.ac, so specify -l directly
 # p44ayabd_LDADD = $(JSONC_LIBS) $(PTHREAD_LIBS)
-p44ayabd_LDADD = $(PTHREAD_LIBS) -ljson-c -ldl
+p44ayabd_LDADD = $(PTHREAD_LIBS) -lpng16 -ljson -ldl
 endif
 
 

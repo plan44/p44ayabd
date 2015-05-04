@@ -1,2 +1,16 @@
 ayab-apparat/
+# XCode
 p44ayabd.xcodeproj/project.xcworkspace/xcuserdata/luz.xcuserdatad/UserInterfaceState.xcuserstate
+# automake
+*.o
+.deps
+.dirstamp
+config.*
+Makefile.in
+aclocal.m4
+autom4te.cache/
+configure
+configure_aux/
+stamp-h1
+# binary
+p44ayabd
