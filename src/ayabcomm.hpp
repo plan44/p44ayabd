@@ -95,6 +95,10 @@ namespace p44 {
     /// @param aDefaultPort default port number for TCP connection (irrelevant for direct serial device connection)
     void setConnectionSpecification(const char *aConnectionSpec, uint16_t aDefaultPort);
 
+    /// restart the AYAB (disconnect, wait, reconnect)
+    /// @param aDoneCB called when restart is done
+    void restart(SimpleCB aDoneCB);
+
     /// start knitting job
     /// @param aFirstNeedle number of the first needle from the left to use (0..199)
     /// @param aWidth width in number of needles
@@ -121,6 +125,9 @@ namespace p44 {
     void sendNextRow();
 
     bool simulationControlKeyHandler(char aKey);
+
+    void reconnect(SimpleCB aDoneCB);
+    void restarted(SimpleCB aDoneCB);
 
   };
 

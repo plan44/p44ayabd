@@ -192,16 +192,14 @@ public:
       if (aIsAction) {
         if (aData->get("restart", o)) {
           if (o->boolValue()) {
-            MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
-            initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 1*Second);
+            restartAyab(true);
           }
         }
         else if (aData->get("setWidth", o)) {
           err = patternQueue->setWidth(o->int32Value());
           patternQueue->saveState(statedir.c_str(), false);
           // also needs restart
-          MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
-          initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 1*Second);
+          restartAyab(true);
         }
         else {
           err = WebError::err(500, "Unknown action for /machine");
@@ -251,7 +249,12 @@ public:
       if (aIsAction) {
         // check action to execute on cursor
         if (aData->get("setPosition", o)) {
-          patternQueue->moveCursor(o->int32Value(), false);
+          bool beginningOfEntry = false;
+          JsonObjectPtr b;
+          if (aData->get("boundary", b)) {
+            beginningOfEntry = b->boolValue();
+          }
+          patternQueue->moveCursor(o->int32Value(), false, beginningOfEntry);
           patternQueue->saveState(statedir.c_str(), false);
         }
       }
@@ -314,6 +317,17 @@ public:
     terminateApp(EXIT_SUCCESS);
   }
 
+
+  void restartAyab(bool aWithDisconnect)
+  {
+    MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
+    if (aWithDisconnect) {
+      ayabComm->restart(boost::bind(&P44ayabd::initiateKnitting, this));
+    }
+    else {
+      initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
+    }
+  }
 
 
   void initiateKnitting()

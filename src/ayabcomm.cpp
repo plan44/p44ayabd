@@ -372,6 +372,29 @@ void AyabComm::sendNextRow()
 }
 
 
+void AyabComm::restart(SimpleCB aDoneCB)
+{
+  serialComm->closeConnection();
+  status = ayabstatus_offline;
+  MainLoop::currentMainLoop().executeOnce(boost::bind(&AyabComm::reconnect, this, aDoneCB), 3*Second);
+}
+
+
+void AyabComm::reconnect(SimpleCB aDoneCB)
+{
+  serialComm->requestConnection();
+  status = ayabstatus_connected;
+  MainLoop::currentMainLoop().executeOnce(boost::bind(&AyabComm::restarted, this, aDoneCB), 3*Second);
+}
+
+
+void AyabComm::restarted(SimpleCB aDoneCB)
+{
+  if (aDoneCB) aDoneCB();
+}
+
+
+
 
 // Note:Machine is initialized when left hall sensor is passed in Right direction
 

@@ -103,7 +103,7 @@ namespace p44 {
     /// @param aNewPos relative or absolute new position
     /// @param aRelative if set, aNewPos is relative to the current cursor position
     /// @note default is to advance the cursor one position
-    void moveCursor(int aNewPos = 1, bool aRelative = true);
+    void moveCursor(int aNewPos = 1, bool aRelative = true, bool aBeginningOfEntry = false);
 
     /// @param aAtWidth which pixel of the row
     /// @return gray value from current cursor row

@@ -133,7 +133,7 @@ int PatternQueue::imageStartPos(int aImageIndex)
 
 
 
-void PatternQueue::moveCursor(int aNewPos, bool aRelative)
+void PatternQueue::moveCursor(int aNewPos, bool aRelative, bool aBeginningOfEntry)
 {
   int oldCursor = cursorPosition();
   int newCursor = aRelative ? oldCursor+aNewPos : aNewPos;
@@ -152,7 +152,8 @@ void PatternQueue::moveCursor(int aNewPos, bool aRelative)
       int newpos = pos+qe->patternLength;
       if (newCursor<newpos) {
         // this is the new queue element
-        cursorOffset = newCursor-pos;
+        if (!aBeginningOfEntry)
+          cursorOffset = newCursor-pos;
         break;
       }
       // cursor is higher

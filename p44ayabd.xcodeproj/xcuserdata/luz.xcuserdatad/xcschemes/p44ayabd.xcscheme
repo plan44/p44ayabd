@@ -73,7 +73,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--ayabconnection 192.168.59.75:2109"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--ayabconnection /dev/cu.usbmodem1421"
@@ -81,7 +81,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--ayabconnection simulation"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-l 5"

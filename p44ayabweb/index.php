@@ -141,6 +141,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       
       #errormessage { font-weight: bold; color: red; }
 
+      #machineerr { text-align: center; background-color: #ff0000; width: 100%; }
       #machinerestart { text-align: center; background-color: #ffb300; width: 100%; }
       #machineready { text-align: center; background-color: #e0ff97; width: 100%; }
 
@@ -170,13 +171,20 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         }).done(function(response) {
           var status = response.result.status;
           // update machine status
-          if (status<3) {
+          if (status<2) {
+            $('#machineerr').show();
+            $('#machinerestart').hide();
+            $('#machineready').hide();
+          }
+          else if (status<3) {
+            $('#machineerr').hide();
             $('#machinerestart').show();
             $('#machineready').hide();
           }
           else {
-            $('#machineready').show();            
+            $('#machineerr').hide();
             $('#machinerestart').hide();
+            $('#machineready').show();            
           }
         });
       }
@@ -211,12 +219,15 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       }
       
       
-      function userCursorApply()
+      function userCursorApply(boundary)
       {
         clearTimeout(cursorUpdaterTimeout);
         var query = {
           setPosition : $('#usercursor').width()
         };
+        if (boundary) {
+          query['boundary'] = true;
+        }
         $.ajax({
           url: '/api.php/cursor',
           type: 'post',
@@ -335,7 +346,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
   </head>
 
   <body>
-    <h1>p44 AYAB web</h1>
+    <h1><a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>">p44 AYAB web</a></h1>
     
     <?php 
 
@@ -456,13 +467,15 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         <button onClick="javascript:restartKnitting();">Neustart</button>        
       </div>
       <div id="machinerestart" style="display:none;">Stricken neustarten: Wagen ganz nach links, dann rechts bis 2*beep</div>
+      <div id="machineerr" style="display:none;">Nicht betriebsbereit, bitte warten</div>
       <div id="queue">
         <div id="queueimages"></div>
         <div id="cursor"></div>
         <div id="usercursor" style="display:none;"></div>
       </div>
       <div id="userCursorControls" style="display:none;">
-        <button id="userCursorApplyButton" onclick="javascript:userCursorApply();">Position setzen</button>
+        <button id="userCursorApplyButton" onclick="javascript:userCursorApply(false);">Position setzen</button>
+        <button id="userCursorBoundaryButton" onclick="javascript:userCursorApply(true);">Position auf Bildanfang setzen</button>
         <button id="userCursorCancelButton" onclick="javascript:userCursorCancel();">Abbrechen</button>
       </div>
       <div id="queuecontrol">
