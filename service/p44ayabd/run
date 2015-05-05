@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # config
-EXECUTABLE=/usr/bin/p44ayabd
+EXECUTABLE=/usr/local/bin/p44ayabd
 AYABSERIALPORT=/dev/ttyACM0
 JSONAPIPORT=9999
 STATEDIR=/var/lib/p44ayabd
