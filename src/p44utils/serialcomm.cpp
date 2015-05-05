@@ -138,27 +138,6 @@ ErrorPtr SerialComm::establishConnection()
       // - set new params
       tcflush(connectionFd, TCIFLUSH);
       tcsetattr(connectionFd,TCSANOW,&newtio);
-
-      // play with RTS & DTR
-      int iFlags;
-
-//      // turn on RTS
-//      iFlags = TIOCM_RTS;
-//      ioctl(connectionFd, TIOCMBIS, &iFlags);
-
-//      // turn off RTS
-//      iFlags = TIOCM_RTS;
-//      ioctl(connectionFd, TIOCMBIC, &iFlags);
-
-//      // turn on DTR
-//      iFlags = TIOCM_DTR;
-//      ioctl(connectionFd, TIOCMBIS, &iFlags);
-
-//      // turn off DTR
-//      iFlags = TIOCM_DTR;
-//      ioctl(connectionFd, TIOCMBIC, &iFlags);
-
-
     }
     else {
       // assume it's an IP address or hostname
@@ -230,6 +209,23 @@ bool SerialComm::connectionIsOpen()
   return connectionOpen;
 }
 
+
+#pragma mark - handshake signal control
+
+void SerialComm::setDTR(bool aActive)
+{
+  if (!connectionIsOpen()) return; // ignore
+  int iFlags = TIOCM_DTR;
+  ioctl(connectionFd, aActive ? TIOCMBIS : TIOCMBIC, &iFlags);
+}
+
+
+void SerialComm::setRTS(bool aActive)
+{
+  if (!connectionIsOpen()) return; // ignore
+  int iFlags = TIOCM_RTS;
+  ioctl(connectionFd, aActive ? TIOCMBIS : TIOCMBIC, &iFlags);
+}
 
 
 #pragma mark - handling data exception

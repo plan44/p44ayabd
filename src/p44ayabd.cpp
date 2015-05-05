@@ -117,10 +117,10 @@ public:
     // check mode
     string p;
     if (getStringOption("knitpng", p)) {
-      simpleModeStart(p);
+      ayabComm->restart(boost::bind(&P44ayabd::simpleModeStart, this, p));
     }
     else if (getStringOption("jsonapiport", p)) {
-      apiModeStart(p);
+      ayabComm->restart(boost::bind(&P44ayabd::apiModeStart, this, p));
     }
     else {
       // unknown mode

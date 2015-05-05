@@ -177,6 +177,7 @@ void AyabComm::setConnectionSpecification(const char *aConnectionSpec, uint16_t 
     // open connection so we can receive
     if (serialComm->requestConnection()) {
       status = ayabstatus_connected;
+      serialComm->setDTR(false); // arduino reset
     }
     // set accept buffer for re-assembling messages before processing
     setAcceptBuffer(4); // largest message is 4 bytes (2 + possibly CRLF)
@@ -269,7 +270,7 @@ void AyabComm::ayabCmdResponseHandler(StatusCB aStatusCB, SerialOperationPtr aOp
         uint8_t sta = ropP->getDataP()[1];
         LOG(LOG_INFO, "AYAB start status: %d\n", sta);
         if (sta!=1) {
-          aError = TextError::err("AYAB start command failed");
+          aError = TextError::err("AYAB start command failed, AYAB status code = %d", sta);
         }
       }
       else {
@@ -374,15 +375,15 @@ void AyabComm::sendNextRow()
 
 void AyabComm::restart(SimpleCB aDoneCB)
 {
-  serialComm->closeConnection();
+  serialComm->setDTR(true); // arduino reset
   status = ayabstatus_offline;
-  MainLoop::currentMainLoop().executeOnce(boost::bind(&AyabComm::reconnect, this, aDoneCB), 3*Second);
+  MainLoop::currentMainLoop().executeOnce(boost::bind(&AyabComm::endReset, this, aDoneCB), 3*Second);
 }
 
 
-void AyabComm::reconnect(SimpleCB aDoneCB)
+void AyabComm::endReset(SimpleCB aDoneCB)
 {
-  serialComm->requestConnection();
+  serialComm->setDTR(false); // arduino reset
   status = ayabstatus_connected;
   MainLoop::currentMainLoop().executeOnce(boost::bind(&AyabComm::restarted, this, aDoneCB), 3*Second);
 }

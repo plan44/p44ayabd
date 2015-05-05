@@ -126,7 +126,7 @@ namespace p44 {
 
     bool simulationControlKeyHandler(char aKey);
 
-    void reconnect(SimpleCB aDoneCB);
+    void endReset(SimpleCB aDoneCB);
     void restarted(SimpleCB aDoneCB);
 
   };
