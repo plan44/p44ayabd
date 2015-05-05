@@ -376,6 +376,7 @@ void AyabComm::sendNextRow()
 void AyabComm::restart(SimpleCB aDoneCB)
 {
   serialComm->setDTR(true); // arduino reset
+  LOG(LOG_NOTICE, "restarting AYAB - DTR set active and waiting 3 seconds\n");
   status = ayabstatus_offline;
   MainLoop::currentMainLoop().executeOnce(boost::bind(&AyabComm::endReset, this, aDoneCB), 3*Second);
 }
@@ -384,6 +385,7 @@ void AyabComm::restart(SimpleCB aDoneCB)
 void AyabComm::endReset(SimpleCB aDoneCB)
 {
   serialComm->setDTR(false); // arduino reset
+  LOG(LOG_NOTICE, "restarting AYAB - DTR set inactive again and waiting 3 seconds\n");
   status = ayabstatus_connected;
   MainLoop::currentMainLoop().executeOnce(boost::bind(&AyabComm::restarted, this, aDoneCB), 3*Second);
 }
@@ -391,6 +393,7 @@ void AyabComm::endReset(SimpleCB aDoneCB)
 
 void AyabComm::restarted(SimpleCB aDoneCB)
 {
+  LOG(LOG_NOTICE, "restarting AYAB done - should be ready in 3 seconds\n");
   if (aDoneCB) aDoneCB();
 }
 
