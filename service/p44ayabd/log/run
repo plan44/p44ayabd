@@ -1,0 +1,21 @@
+#!/bin/sh
+DAEMON=p44ayabd
+LOGDIR=/var/log/${DAEMON}
+
+# create logdir (svlogd runs as nobody)
+mkdir -p ${LOGDIR}
+chmod 777 ${LOGDIR}
+
+# default line and filter matching length should be short
+LINELEN=80
+BUFLEN=200
+
+# create the log config
+cat >${LOGDIR}/config <<ENDOFFILE
+s5000000
+n10
+N5
+ENDOFFILE
+
+# start the log daemon
+exec chpst -unobody svlogd -l ${LINELEN} -b ${BUFLEN} ${LOGDIR}
