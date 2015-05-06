@@ -1,6 +1,6 @@
 <?php
 
-define("DBGLVL", 1);
+define("DBGLVL", 0);
 
 // configuration
 $imagequeueurl = '/imgs';
@@ -13,6 +13,15 @@ $imagequeuedir = $_SERVER['DOCUMENT_ROOT'] . $imagequeueurl;
 // init state
 $errormessage = '';
 $queue = array();
+
+// defaults
+if (!isset($_REQUEST['fontname']))
+  $_REQUEST['fontname'] = 'Helvetica-Bold';
+if (!isset($_REQUEST['fontsize']))
+  $_REQUEST['fontsize'] = 45;
+
+
+
 
 /// @param $aJsonRequest associative array representing JSON request to send to p44ayabd
 function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
@@ -63,9 +72,53 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
 
     <style type="text/css">
       
-      #machine {
-        margin: 20px;
+      body {
+        background-image: linear-gradient(
+          to right,
+          rgb(255, 63, 146)  0%,
+          rgb(211, 121, 1)   18.5%,
+          rgb(46, 165, 0)    37.0%,
+          rgb(0, 166, 72)    40.7%,
+          rgb(15, 149, 231)  74.0%,
+          rgb(255, 51, 180)  96.9%,
+          rgb(255, 63, 146) 100%
+        );
+        background-position: initial initial;
+        background-repeat: initial initial;
+        font-family: sans-serif;
       }
+      
+      #title {
+        padding: 0px;
+        padding-bottom: 20px;
+      }
+      #title table {
+        width: 100%;
+      }
+      #projectname { width: 35%; }
+      #credits { width: 65%; }      
+      #credits ul {
+        margin-left: 20px;
+        list-style: square;
+        list-style-position: inside;
+        padding: 0;
+      }
+      #title td {
+        vertical-align: top;
+        padding: 0;
+      }
+      #imgwait {
+        padding: 20px;
+        background-color: #ffa300;
+      }
+      #machine {
+        padding: 20px;
+        background-color: #d5e465;
+      }
+      
+      #machineerr { text-align: center; background-color: #ff0000; width: 100%; }
+      #machinerestart { text-align: center; background-color: #ffb300; width: 100%; }
+      #machineready { text-align: center; background-color: #b3ff00; width: 100%; }
       
       #queue {
         position: relative;
@@ -77,6 +130,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       #queueimages {
         padding: 0;
         margin: 0;
+        background-color: white;
       }
       #queueimages table {
         border-collapse: collapse;
@@ -141,10 +195,6 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       
       #errormessage { font-weight: bold; color: red; }
 
-      #machineerr { text-align: center; background-color: #ff0000; width: 100%; }
-      #machinerestart { text-align: center; background-color: #ffb300; width: 100%; }
-      #machineready { text-align: center; background-color: #e0ff97; width: 100%; }
-
     </style>
 
 
@@ -155,6 +205,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       {
         // document ready
         updateQueue();
+        $('#imgwait').hide();
       });
 
       var cursorUpdaterTimeout = 0;
@@ -346,7 +397,23 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
   </head>
 
   <body>
-    <h1><a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>">p44 AYAB web</a></h1>
+    <div id="title">
+      <table>
+        <tr>
+          <td id="projectname"><h1>p44 AYAB web<br/>@<a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>"><?php echo $_SERVER['SERVER_ADDR']; ?></a></h1></td>
+          <td id="credits">
+            <p>Endlos-Text/Symbolband-Strickmaschine basierend auf:</p>
+            <ul>
+              <li>Hardware + Firmware von <a href="http://www.ayab-knitting.com" target="_blank">AYAB (All Yarns Are Beautiful)</a></li>
+              <li>Strickmaschine KH930 und Knowhow von <a href="http://zurich.fablab.ch" target="_blank">Fablab Zürich</a></li>
+              <li><a href="http://www.arduino.cc" target="_blank">Arduino</a></li>
+              <li><a href="https://www.raspberrypi.org" target="_blank">Raspberry Pi</a></li>
+              <li>p44ayabd, Web-Interface und setup von <a href="" target="_blank">luz/plan44.ch</a></li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </div>
     
     <?php 
 
@@ -396,15 +463,22 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
     else if (isset($_REQUEST['addnewtext'])) {
       // get text
       $text = $_REQUEST['newtext'];
+      $fontname = $_REQUEST['fontname'];
+      $fontsize = $_REQUEST['fontsize'];
       // get text attributes
-      // - font
-      $fontname = 'Helvetica-Bold';
-      if (isset($_REQUEST['fontname']))
-        $fontname = $_REQUEST['fontname'];
-      // - size
-      $fontsize = 45;
-      if (isset($_REQUEST['fontsize']))
-        $fontsize = $_REQUEST['fontsize'];
+      if (empty($fontname))
+        $fontname = 'Helvetica-Bold';
+      if ($fontsize<9 || $fontsize>300)
+        $fontsize = 45;
+    
+      ob_end_flush();      
+      echo('<div id="imgwait"><p>Bitte warten, der Raspberry Pi ist nicht so schnell beim Berechnen von Bildern...</p><ul>');
+      flush();
+      
+      // simulate time it takes on a raspberry
+      echo('<li>warte sinnlos 2 Sekunden</li>'); flush();
+      sleep(2);
+      
     
       // get width (= text height)
       $s = ayabJsonCall('/queue', false, false);
@@ -413,6 +487,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
 
           
       // Create Imagick objects
+      echo('<li>initialisiere</li>'); flush();
       $image = new Imagick();
       $draw = new ImagickDraw();
       $color = new ImagickPixel('black');
@@ -426,28 +501,36 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       $draw->setStrokeAntialias(true);
       $draw->setTextAntialias(true);
       
+      echo('<li>bestimme Dimension des Textes</li>'); flush();
       // Get font metrics
       $metrics = $image->queryFontMetrics($draw, $text);
       
       // draw the text
       $topborder = 2;
       $spaceatend = 5;
+      echo('<li>generiere Text</li>'); flush();
       $draw->annotation(0, $topborder+$metrics['ascender'], $text);
       
       // create image of correct size
+      echo('<li>generiere Bild</li>'); flush();
       $image->newImage($spaceatend+$metrics['textWidth'], $topborder+$metrics['textHeight'], $background);
       $image->setImageFormat('png');
+      echo('<li>zeichne Text ins Bild</li>'); flush();
       $image->drawImage($draw);
       
       // save to queue dir
       $queuefilename = strftime('%Y-%m-%d_%H.%M.%S') . '_generated_text';
+      echo('<li>speichere Bild</li>'); flush();
       file_put_contents($imagequeuedir . '/' . $queuefilename, $image);
     
       // add to queue
+      echo('<li>Füge Bild zum Strickmuster hinzu</li>');
       ayabJsonCall('/queue', array(
         'addFile' => $imagequeuedir . '/' . $queuefilename,
         'webURL' => $imagequeueurl . '/' . $queuefilename            
       ), true);
+      echo('<li>fertig!</li></ul></div>'); flush();
+      ob_start();
         
     /*
       // %%% just output for now
@@ -482,18 +565,39 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
 
         <div id="errormessage"><?php echo($errormessage); ?></div>
 
-        <form enctype="multipart/form-data" action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="POST">
-          <p><label for="newimage">Neues Bild hinzufügen:</label>
-          <input name="newimage" id="newimage" type="file" maxlength="50000" accept="image/png" onchange="javascript:this.form.submit();"/></p>
-        </form>
+        <p>
+          <form enctype="multipart/form-data" action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="POST">
+            <label for="newimage">Neues Bild hinzufügen:</label>
+            <input name="newimage" id="newimage" type="file" maxlength="50000" accept="image/png" onchange="javascript:this.form.submit();"/>
+          </form>
+        </p>
 
-        <form action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="POST">
-          <p><label for="newtext">Neuen Text hinzufügen:</label>
-          <input name="newtext" id="newtext" />&nbsp;<button name="addnewtext" type="submit">Text hinzufügen</button></p>
-        </form>
+        <p>
+          <form action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="POST">
+            <label for="newtext">Neuen Text hinzufügen:</label>
+            <input name="newtext" id="newtext" />&nbsp;<button name="addnewtext" type="submit">Text hinzufügen</button>
+            <br/>
+            <label for="fontname">Schriftart:</label>
+            <select name="fontname" id="fontname">
+              <?php
+              $imagick = new Imagick();
+              $fonts = $imagick->queryFonts();
+              foreach($fonts as $font) {
+                echo('<option' . ($font==$_REQUEST['fontname'] ? ' selected="true"' : '') . ' value="' . $font . '">' . $font . '</option>');
+              }
+              ?>
+            </select>
+            <label for="fontsize">Schriftgrösse:</label>
+            <input type="number" min="9" max="300" name="fontsize" id="fontsize" value="<?php echo $_REQUEST['fontsize']; ?>"/>
+          </form>
+        </p>
 
-        <p><label for="patternWidth">Musterbreite:</label>
-        <input type="number" name="patternWidth" id="patternWidth"/>&nbsp;<button onClick="javascript:applyNewWidth()">Breite neu setzen</button></p>
+        <p>
+          <form>
+            <label for="patternWidth">Musterbreite:</label>
+            <input type="number" min="10" max="200" name="patternWidth" id="patternWidth"/>&nbsp;<button onClick="javascript:applyNewWidth()">Breite neu setzen</button>
+          </form>
+        </p>
 
       </div>
     </div>
