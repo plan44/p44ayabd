@@ -142,6 +142,7 @@ public:
   {
     JsonCommPtr conn = JsonCommPtr(new JsonComm(MainLoop::currentMainLoop()));
     conn->setMessageHandler(boost::bind(&P44ayabd::apiRequestHandler, this, conn, _1, _2));
+    conn->setClearHandlersAtClose(); // close must break retain cycles so this object won't cause a mem leak
     return conn;
   }
 
