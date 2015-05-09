@@ -32,6 +32,7 @@ SocketComm::SocketComm(MainLoop &aMainLoop) :
   isConnecting(false),
   isClosing(false),
   serving(false),
+  clearHandlersAtClose(false),
   addressInfoList(NULL),
   currentAddressInfo(NULL),
   currentSockAddrP(NULL),
@@ -74,6 +75,7 @@ ErrorPtr SocketComm::startServer(ServerConnectionCB aServerConnectionHandler, in
   int one = 1;
   int socketFD = -1;
 
+  maxServerConnections = aMaxConnections;
   memset((char *) &sin, 0, sizeof(sin));
   if (protocolFamily==AF_INET) {
     sin.sin_family = (sa_family_t)protocolFamily;
@@ -497,7 +499,9 @@ void SocketComm::internalCloseConnection()
     serving = false;
     // - close all child connections (closing will remove them from the list)
     while (clientConnections.size()>0) {
-      (*clientConnections.begin())->closeConnection();
+      SocketCommPtr conn = *clientConnections.begin();
+      conn->closeConnection();
+      conn->clearCallbacks(); // clear callbacks to break possible retain cycles
     }
   }
   else if (connectionOpen || isConnecting) {
@@ -522,6 +526,10 @@ void SocketComm::internalCloseConnection()
   if (currentSockAddrP) {
     free(currentSockAddrP);
     currentSockAddrP = NULL;
+  }
+  // now clear handlers if requested
+  if (clearHandlersAtClose) {
+    clearCallbacks();
   }
   isClosing = false;
 }
