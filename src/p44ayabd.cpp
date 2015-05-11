@@ -189,7 +189,29 @@ public:
   {
     ErrorPtr err;
     JsonObjectPtr o;
-    if (aUri=="/machine") {
+    if (aUri=="/platform") {
+      if (aIsAction) {
+        if (aData->get("restart", o)) {
+          if (o->boolValue()) {
+            patternQueue->saveState(statedir.c_str(), false);
+            LOG(LOG_WARNING,"Restarting entire platform now (reboot)\n");
+            #ifndef __APPLE__
+            MainLoop::currentMainLoop().fork_and_system(NULL, "/bin/sync; /sbin/reboot", false);
+            #endif
+          }
+        }
+        else if (aData->get("shutdown", o)) {
+          if (o->boolValue()) {
+            patternQueue->saveState(statedir.c_str(), false);
+            LOG(LOG_WARNING,"Shutting down platform now (poweroff)\n");
+            #ifndef __APPLE__
+            MainLoop::currentMainLoop().fork_and_system(NULL, "/bin/sync; /sbin/poweroff", false);
+            #endif
+          }
+        }
+      }
+    }
+    else if (aUri=="/machine") {
       if (aIsAction) {
         if (aData->get("restart", o)) {
           if (o->boolValue()) {
