@@ -198,7 +198,7 @@ bool AyabComm::simulationControlKeyHandler(char aKey)
       sendNextRow();
   }
   else if (toupper(aKey)=='Q') {
-    Application::sharedApplication()->terminateApp(WebError::err(500,"Simulation mode, user hit Q key"));
+    Application::sharedApplication()->terminateAppWith(WebError::err(500,"Simulation mode, user hit Q key"));
   }
   return true; // fully handled
 }

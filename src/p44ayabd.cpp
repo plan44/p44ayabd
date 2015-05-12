@@ -110,7 +110,7 @@ public:
       ayabComm->setConnectionSpecification(ayabconnection.c_str(), 2109);
     }
     else {
-      terminateApp(TextError::err("no connection specified for AYAB"));
+      terminateAppWith(TextError::err("no connection specified for AYAB"));
     }
     // create queue
     patternQueue = PatternQueuePtr(new PatternQueue);
@@ -124,7 +124,7 @@ public:
     }
     else {
       // unknown mode
-      terminateApp(TextError::err("Must use either --knitpng or --jsonapiport"));
+      terminateAppWith(TextError::err("Must use either --knitpng or --jsonapiport"));
     }
   };
 
@@ -329,7 +329,7 @@ public:
       initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
     }
     else {
-      terminateApp(err);
+      terminateAppWith(err);
     }
   }
 
