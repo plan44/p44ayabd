@@ -575,7 +575,9 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       <div id="machineready" style="display:none;">Stricken läuft, Wagen hin-und-herschieben
         <button onClick="javascript:restartKnitting();">Neustart</button>
       </div>
-      <div id="machinerestart" style="display:none;">Stricken neustarten: Wagen ganz nach links, dann rechts bis 2*beep</div>
+      <div id="machinerestart" style="display:none;">Stricken neustarten: Wagen ganz nach links, dann rechts bis 2*beep
+        <button onClick="javascript:restartKnitting();">Neustart</button>        
+      </div>
       <div id="machineerr" style="display:none;">Nicht betriebsbereit, bitte warten</div>
       <div id="queue">
         <div id="queueimages"></div>
