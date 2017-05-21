@@ -43,7 +43,7 @@ At the *Wellensalat* event, some of the knitted banners were integrated into a b
 ### Hardware parts needed
 
 1. A KH910, KH930 or KH940 knitting machine. Thanks to [Fablab Zürich](http://zurich.fablab.ch) for lending us their KH930!
-2. An AYAB shield for your machine (there are two different versions for KH910 and KH930/940), available from [TinkerSoup](https://www.tinkersoup.de/arduino/arduino-shields/ayab-shield/a-1286/)
+2. An AYAB shield for your machine (there are two different versions for KH910 and KH930/940), available from [ThinkStack](https://shop.thinkstack.de/gb/)
 3. A standard size Arduino. I used an UNO, a more recent version should do as well.
 4. A Raspberry Pi, I used an older Model B which is by far good enough, but B+ and 2 work as well, with a suitable (>=4GB) SD Card.
 5. The mounting plate. I used a piece of plexiglass, and had it lasercut at [Fablab Zürich](http://zurich.fablab.ch) to 570mm x 65mm, including all needed holes. See *mounting-plate/p44ayab_mount.dxf* file, layer0 contains the outline and holes.
@@ -52,10 +52,13 @@ At the *Wellensalat* event, some of the knitted banners were integrated into a b
 
 ### AYAB Setup
 
-1.	assemble and install the AYAB shield (see their [tutorial video](http://vimeo.com/99870358) and [wiki](https://bitbucket.org/chris007de/ayab-apparat/wiki/Home))
+1.	assemble and install the AYAB shield (see their [tutorial video](http://vimeo.com/99870358))
 
-2. Install the AYAB firmware. There is a [video](https://vimeo.com/105064325) for that as well, otherwise follow the instructions in the [AYAB wiki](https://bitbucket.org/chris007de/ayab-apparat/wiki/english/Home) Note: the only part we need is the AYAB Arduino firmware.
-
+2. As we need a specific firmware version (which is now, when updating this in 2017, not the current one any more), use the contents of the `ayab_firmware` folder and the arduino IDE to install the firmware:
+   1. copy the contents of the `needed_arduino_libraries` folder into your Arduino library folder (on macOS: `~/Documents/Arduino/libraries`)
+   2. open the sketch `ayab.ino` from the `ayab` folder.
+   3. Compile and install it using the Arduino IDE (there are a few compiler warnings, but installation should still work)
+ 
 Here are two pictures of our KH940 with AYAB shield and RPi mounted.
 
 ![AYAB shield and RPi mounted on plexiglass plate in KH930](p44ayabd_kh930_mounted.jpg)
@@ -155,7 +158,7 @@ It will look like this:
 
 I hope the UI is more or less self-explanatory (even if currently in German only).
 
-You can add text (or images) in segments to the queue, click to re-position the knitting cursor, remove text segments alredy or not yet knitted, select a font and also restart the AYAB in case something goes wrong.
+You can add text (or images) in segments to the queue, click to re-position the knitting cursor, remove text segments already or not yet knitted, select a font and also restart the AYAB in case something goes wrong.
 
 Even if someone trips over the power cord and reboots the Rpi, the queue, pattern width and cursor is preserved and you should be able to continue knitting where you left off.
 
