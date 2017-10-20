@@ -11,7 +11,8 @@ AC_PROG_CXX
 
 AC_CONFIG_FILES([Makefile])
 
-# options
+dnl # options
+
 AC_ARG_ENABLE([debug],
 [  --enable-debug    Turn on debugging],
 [case "${enableval}" in
@@ -43,11 +44,11 @@ AC_CHECK_LIB(dl, dlopen, [], [AC_MSG_ERROR([Could not find libdl])])
 PKG_PROG_PKG_CONFIG
 
 # AM_COND_IF ([RASPBERRYPI], [
-#   # hacked RPi cross build
+#   dnl # hacked RPi cross build
 #
 # ], [
 #
-#   # normal Linux build
+#   dnl # normal Linux build
 #   PKG_CHECK_MODULES([JSONC], [json], [],
 #       [
 #           AC_MSG_ERROR([Missing json-c / libjson0])
