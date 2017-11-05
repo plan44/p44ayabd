@@ -78,6 +78,13 @@ The complete setup, including building p44ayabd from sources, and all steps to c
 
 2. Use raspi-config (auto-starts at first boot) to expand the file system and to give the Rpi a suitable name (mine is called "ayabpi").
 
+**Note:** if you want to fit everything into a 4GB card, start with an older Raspian (Jessie from November 2015 is just below 4GB). To get around 400MB of free space, delete some big packages, for example:
+
+    # - frees about 400M
+    apt-get remove bluej libreoffice scratch supercollider xpdf sonic-pi
+    apt-get autoremove
+
+
 ### Compiling p44ayabd
 
 Install the dependencies (takes a lot of time, as it includes installing the gcc toolchain):
@@ -92,12 +99,12 @@ Clone the p44ayabd repository
 	cd ~
 	git clone https://github.com/plan44/p44ayabd
 
-We need a newer libpng than what Raspian has by default (that is - *had* at the time of writing this in 2015 - so you might be able to replace this step by simply *apt-get install libpng-dev* on a newer Raspian):
+We need a newer libpng than what Raspian has by default (that is - *had* at the time of writing this in 2015 - so you *might* be able to replace this step by simply *apt-get install libpng-dev* on a newer Raspian):
 
 	cd ~
 	wget -O libpng.tar.xz http://sourceforge.net/projects/libpng/files/latest/download?source=files
 	tar --xz -xf libpng.tar.xz
-	cd libpng-1.6.17
+	cd libpng-1.6.32
 	./configure
 	make
 	sudo make install
@@ -125,13 +132,13 @@ Install service files for p44ayabd
 	
 ### the php website
 
-Install Imagick (this pulls apache, php etc. as dependencies)
+Install imagick, apache, php5
 
-	apt-get install php5-imagick
+	apt-get install apache2 libapache2-mod-php5 php5-imagick
 	
 copy web contents
 
-	cd /var/www
+	cd /var/www/html
 	sudo cp -r ~/p44ayabd/p44ayabweb/* .
 	
 make imgs writable for all (so web server and p44ayabd can write it)
@@ -142,15 +149,18 @@ disable existing index.html because that's what apache2 uses first
 
 	sudo mv index.html index.html.disabled
 
-enable Apache to collect PATH_INFO
+enable Apache to collect PATH_INFO by inserting...
 
-edit /etc/apache2/sites-available/default and default-ssl and insert
-*AcceptPathInfo On* into configuration for /var/www directory
+    <Directory /var/www/html>
+        AcceptPathInfo On
+    </Directory>
 
-	sudo pico /etc/apache2/sites-available/default
-	sudo pico /etc/apache2/sites-available/default-ssl
+...into the apache configuration files configuration for http and https default websites
+
+	sudo pico /etc/apache2/sites-available/000-default.conf
+	sudo pico /etc/apache2/sites-available/default-ssl.conf
 	
-Now, either reboot the Rpi, and afterwards you should be able to access the p44ayabd website either from the web browser from the RPi desktop or from any browser in the LAN.
+Now, reboot the Rpi, and afterwards you should be able to access the p44ayabd website either from the web browser from the RPi desktop or from any browser in the LAN.
 
 It will look like this:
 
