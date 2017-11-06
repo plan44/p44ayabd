@@ -17,4 +17,4 @@ exec ${EXECUTABLE} \
   --jsonapiport ${JSONAPIPORT} \
   --statedir ${STATEDIR} \
   -l ${LOGLEVEL} \
-  </dev/null
+  2>&1 </dev/null
