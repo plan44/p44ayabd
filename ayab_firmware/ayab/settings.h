@@ -28,6 +28,11 @@ This file is part of AYAB.
 
 //#define DBG_NOMACHINE  // Turn on to use DBG_BTN as EOL Trigger
 
+#if !defined(KH930)&&!defined(KH910)
+  // none defined, use default
+  #define KH930
+#endif
+
 #ifdef KH910
 	#warning USING MACHINETYPE KH910
 #else
@@ -122,7 +127,7 @@ typedef enum Carriage{
 
 typedef enum Beltshift{
 	Unknown     = 0,
-	Regular 	= 1, 
+	Regular 	= 1,
 	Shifted   	= 2,
     Lace_Regular = 3,
     Lace_Shifted = 4
