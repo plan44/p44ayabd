@@ -30,6 +30,8 @@ Knitter::Knitter()
 	m_stopNeedle        = 0;
 	m_currentLineNumber = 0;
 	m_lineRequested     = false;
+
+	m_solenoids.init();
 }
 
 void Knitter::isr()
@@ -56,6 +58,10 @@ void Knitter::fsm()
 
 		case s_operate:
 			state_operate();
+			break;
+
+		case s_test:
+			state_test();
 			break;
 
 		default: 
@@ -97,6 +103,16 @@ bool Knitter::startOperation(byte startNeedle,
 	return false;
 }
 
+bool Knitter::startTest()
+{
+	if (s_init == m_opState
+		|| s_ready == m_opState)
+	{
+		m_opState = s_test;
+		return true;
+	}
+	return false;
+}
 
 bool Knitter::setNextLine(byte lineNumber)
 {
@@ -128,27 +144,33 @@ void Knitter::setLastLine()
  */
 void Knitter::state_init()
 {
+	static bool _ready = false;
+
 #ifdef DBG_NOMACHINE
-		static bool _prevState = false;
-		bool state = digitalRead(DBG_BTN_PIN);
+	static bool _prevState = false;
+	bool state = digitalRead(DBG_BTN_PIN);
 
-		// TODO Check if debounce is needed
-		if( _prevState && !state )
-		{
-			m_opState = s_ready;
-			return;
-		}
-
-		_prevState = state;
+	// TODO Check if debounce is needed
+	if( _prevState && !state )
+	{
+		_ready = true;
+	}
+	_prevState = state;
 #else
-		// Machine is initialized when left hall sensor is passed in Right direction
-		if( Right == m_direction && Left == m_hallActive )
-		{
-			m_opState = s_ready;
-			m_solenoids.setSolenoids(0xFFFF);
-			return;
-		}
+	// Machine is initialized when left hall sensor is passed in Right direction
+	if( Right == m_direction && Left == m_hallActive )
+	{
+		_ready = true;
+	}
 #endif //DBG_NOMACHINE
+	
+	if (_ready)
+	{
+		m_opState = s_ready;
+		m_solenoids.setSolenoids(0xFFFF);
+		indState(true);
+		return;
+	}
 
 	m_opState = s_init;
 }
@@ -222,6 +244,10 @@ void Knitter::state_operate()
 		else
 		{	// Outside of the active needles
 			//digitalWrite(LED_PIN_B, 0);
+			
+			// Reset Solenoids when out of range
+			m_solenoids.setSolenoid( m_solenoidToSet, true);
+			
 			if( _workedOnLine )
 			{	// already worked on the current line -> finished the line
 				_workedOnLine   = false;
@@ -232,22 +258,37 @@ void Knitter::state_operate()
 				}
 				else if( m_lastLineFlag )
 				{
-					m_lastLinesCountdown--;
-					if(0 == m_lastLinesCountdown)
-					{	// All lines are processed, go back to ready state
-						m_beeper.endWork();
-						m_opState = s_ready;		
-						m_solenoids.setSolenoids(0xFFFF);				
-					}
-					else
-					{  // Inform user to proceed
-						m_beeper.finishedLine();
-					}
+					m_beeper.endWork();
+					m_opState = s_ready;
+					m_solenoids.setSolenoids(0xFFFF);
+					m_beeper.finishedLine();
 				}	
 			}
 		}
 	}
 #endif // DBG_NOMACHINE
+}
+
+
+void Knitter::state_test()
+{
+	static byte _sOldPosition = 0;
+
+	if( _sOldPosition != m_position ) 
+	{ // Only act if there is an actual change of position
+		// Store current Encoder position for next call of this function
+		_sOldPosition = m_position;	
+		
+		if( !calculatePixelAndSolenoid() )
+		{
+			// No valid/useful position calculated
+			//return;
+		}
+	}
+	// Sending not only when Position has changed for better feedback 
+	// in GUI when in Front of Hall Sensors
+	delay(500);
+	indState();
 }
 
 
@@ -317,9 +358,27 @@ bool Knitter::calculatePixelAndSolenoid()
 
 void Knitter::reqLine( byte lineNumber )
 {	
-	Serial.write(0x82);
+	Serial.write(reqLine_msgid);
 	Serial.write(lineNumber);
 	Serial.println("");
 
 	m_lineRequested = true;
+}
+
+void Knitter::indState( bool initState )
+{	
+	Serial.write(indState_msgid);
+	Serial.write((byte)initState);
+
+
+	uint16 hallValue = m_encoders.getHallValue(Left);
+	Serial.write((byte)(hallValue >> 8) & 0xFF);
+	Serial.write((byte)hallValue & 0xFF);	
+	hallValue = m_encoders.getHallValue(Right);
+	Serial.write((byte)(hallValue >> 8) & 0xFF);
+	Serial.write((byte)hallValue & 0xFF);
+	
+	Serial.write((byte)m_encoders.getCarriage());
+	Serial.write((byte)m_pixelToSet);
+	Serial.println("");
 }

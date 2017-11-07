@@ -22,25 +22,21 @@ This file is part of AYAB.
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-// Determine board type
-#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
-  // Regular Arduino
-  #include <Wire.h>
-#elif defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1280__)
-  // Arduino Mega
-  #include <SoftI2CMaster.h>
-#else
-    //untested board - please check your I2C ports
-#endif
-
 /*
  * USERSETTINGS
  */
 
 //#define DBG_NOMACHINE  // Turn on to use DBG_BTN as EOL Trigger
 
-#define KH910
-//#define KH930
+#ifdef KH910
+	#warning USING MACHINETYPE KH910
+#else
+	#ifdef KH930
+		#warning USING MACHINETYPE KH930
+	#else
+		#error KH910 or KH930 has the be defined as preprocessor variable!
+	#endif
+#endif
 
 // Should be calibrated to each device
 // These values are for the K carriage
@@ -63,12 +59,15 @@ This file is part of AYAB.
  */
 
 // DO NOT TOUCH
-#define API_VERSION 3
+#define FW_VERSION_MAJ 0
+#define FW_VERSION_MIN 90
+#define API_VERSION 4 // for message description, see below
 
 #define SERIAL_BAUDRATE 115200
 
 #define BEEPDELAY 50 // ms
 
+// Pin Assignments
 #define EOL_PIN_R 0	// Analog
 #define EOL_PIN_L 1	// Analog
 
@@ -93,7 +92,21 @@ This file is part of AYAB.
 #define END_OF_LINE_OFFSET_L 32
 #define END_OF_LINE_OFFSET_R 12
 
+// Typedefs
 #define uint16 unsigned int
+
+typedef enum AYAB_API{
+    reqStart_msgid    = 0x01,
+    cnfStart_msgid    = 0xC1,
+    reqLine_msgid     = 0x82,
+    cnfLine_msgid     = 0x42,
+    reqInfo_msgid     = 0x03,
+    cnfInfo_msgid     = 0xC3,
+    reqTest_msgid     = 0x04,
+    cnfTest_msgid     = 0xC4,
+    indState_msgid    = 0x84,
+    debug_msgid       = 0xFF
+} AYAB_API_t;
 
 typedef enum Direction{
 	NoDirection	= 0,
@@ -118,7 +131,8 @@ typedef enum Beltshift{
 typedef enum OpState{
 	s_init      = 0,
 	s_ready     = 1,
-	s_operate   = 2
+	s_operate   = 2,
+    s_test      = 3
 } OpState_t;
 //
 
