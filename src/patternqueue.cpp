@@ -80,11 +80,11 @@ ErrorPtr PatternQueue::addFile(string aFilePath, string aWebURL)
 ErrorPtr PatternQueue::removeFile(int aIndex, bool aDeleteFile)
 {
   if (aIndex>=queue.size()) {
-    return WebError::err(500, "Invalid index");
+    return WebError::webErr(500, "Invalid index");
   }
   // cannot remove file under cursor
   if (cursorEntry==aIndex && cursorOffset>0) {
-    return WebError::err(500, "Cannot remove file under cursor");
+    return WebError::webErr(500, "Cannot remove file under cursor");
   }
   // delete file if requested
   stateDirty = true;
@@ -164,7 +164,7 @@ void PatternQueue::moveCursor(int aNewPos, bool aRelative, bool aBeginningOfEntr
     loadPatternAtCursor();
   }
   LOG(LOG_INFO,
-    "Cursor moved from %d to %d, now entry = %d/%d, offset = %d, endOfPattern = %s\n",
+    "Cursor moved from %d to %d, now entry = %d/%lu, offset = %d, endOfPattern = %s",
     oldCursor, newCursor,
     cursorEntry, queue.size(),
     cursorOffset,

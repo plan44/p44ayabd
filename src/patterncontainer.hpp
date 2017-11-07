@@ -23,7 +23,7 @@
 #ifndef __p44ayabd__patterncontainer__
 #define __p44ayabd__patterncontainer__
 
-#include "p44_common.hpp"
+#include "p44utils_common.hpp"
 
 #include <png.h>
 

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ED0A3B3E1FB2727800F3FB89 /* pwm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED0A3B3D1FB2727800F3FB89 /* pwm.cpp */; };
+		ED0A3B411FB272C200F3FB89 /* spi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED0A3B401FB272C200F3FB89 /* spi.cpp */; };
 		ED8622C31AC29D4800CB818B /* p44ayabd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622C21AC29D4800CB818B /* p44ayabd.cpp */; };
 		ED8623061AC29DB600CB818B /* i2c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622CA1AC29DB600CB818B /* i2c.cpp */; };
 		ED8623071AC29DB600CB818B /* operationqueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ED8622CC1AC29DB600CB818B /* operationqueue.cpp */; };
@@ -51,6 +53,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		ED0A3B391FB2672A00F3FB89 /* p44utils_common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = p44utils_common.hpp; sourceTree = "<group>"; };
+		ED0A3B3A1FB2674600F3FB89 /* configure.ac */ = {isa = PBXFileReference; lastKnownFileType = text; path = configure.ac; sourceTree = "<group>"; };
+		ED0A3B3B1FB2674600F3FB89 /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
+		ED0A3B3C1FB2727700F3FB89 /* pwm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = pwm.hpp; sourceTree = "<group>"; };
+		ED0A3B3D1FB2727800F3FB89 /* pwm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pwm.cpp; sourceTree = "<group>"; };
+		ED0A3B3F1FB272C200F3FB89 /* spi.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spi.hpp; sourceTree = "<group>"; };
+		ED0A3B401FB272C200F3FB89 /* spi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spi.cpp; sourceTree = "<group>"; };
 		ED8622BF1AC29D4800CB818B /* p44ayabd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = p44ayabd; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED8622C21AC29D4800CB818B /* p44ayabd.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = p44ayabd.cpp; sourceTree = "<group>"; };
 		ED8622CA1AC29DB600CB818B /* i2c.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = i2c.cpp; sourceTree = "<group>"; };
@@ -111,7 +120,6 @@
 		ED8623011AC29DB600CB818B /* application.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = application.hpp; sourceTree = "<group>"; };
 		ED8623021AC29DB600CB818B /* jsonobject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsonobject.cpp; sourceTree = "<group>"; };
 		ED8623031AC29DB600CB818B /* jsonobject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = jsonobject.hpp; sourceTree = "<group>"; };
-		ED8623041AC29DB600CB818B /* p44_common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = p44_common.hpp; sourceTree = "<group>"; };
 		ED8623051AC29DB600CB818B /* gpio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gpio.h; sourceTree = "<group>"; };
 		ED8623241AC2EF4E00CB818B /* ayabcomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ayabcomm.cpp; sourceTree = "<group>"; };
 		ED8623251AC2EF4E00CB818B /* ayabcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ayabcomm.hpp; sourceTree = "<group>"; };
@@ -135,6 +143,8 @@
 		ED8622B61AC29D4800CB818B = {
 			isa = PBXGroup;
 			children = (
+				ED0A3B3A1FB2674600F3FB89 /* configure.ac */,
+				ED0A3B3B1FB2674600F3FB89 /* Makefile.am */,
 				ED8622C11AC29D4800CB818B /* src */,
 				ED8622C01AC29D4800CB818B /* Products */,
 			);
@@ -187,10 +197,14 @@
 				ED8622D51AC29DB600CB818B /* gpio.cpp */,
 				ED8623051AC29DB600CB818B /* gpio.h */,
 				ED8622F51AC29DB600CB818B /* gpio.hpp */,
+				ED0A3B3D1FB2727800F3FB89 /* pwm.cpp */,
+				ED0A3B3C1FB2727700F3FB89 /* pwm.hpp */,
 				ED8622E51AC29DB600CB818B /* httpcomm.cpp */,
 				ED8622E61AC29DB600CB818B /* httpcomm.hpp */,
 				ED8622CA1AC29DB600CB818B /* i2c.cpp */,
 				ED8622CB1AC29DB600CB818B /* i2c.hpp */,
+				ED0A3B401FB272C200F3FB89 /* spi.cpp */,
+				ED0A3B3F1FB272C200F3FB89 /* spi.hpp */,
 				ED8622D61AC29DB600CB818B /* iopin.cpp */,
 				ED8622D71AC29DB600CB818B /* iopin.hpp */,
 				ED8622E71AC29DB600CB818B /* jsoncomm.cpp */,
@@ -225,7 +239,7 @@
 				ED8622F11AC29DB600CB818B /* ssdpsearch.hpp */,
 				ED8622DC1AC29DB600CB818B /* utils.cpp */,
 				ED8622F91AC29DB600CB818B /* utils.hpp */,
-				ED8623041AC29DB600CB818B /* p44_common.hpp */,
+				ED0A3B391FB2672A00F3FB89 /* p44utils_common.hpp */,
 			);
 			path = p44utils;
 			sourceTree = "<group>";
@@ -256,7 +270,7 @@
 		ED8622B71AC29D4800CB818B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0620;
+				LastUpgradeCheck = 0910;
 				ORGANIZATIONNAME = plan44.ch;
 				TargetAttributes = {
 					ED8622BE1AC29D4800CB818B = {
@@ -286,6 +300,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ED0A3B3E1FB2727800F3FB89 /* pwm.cpp in Sources */,
 				ED86231B1AC29DB700CB818B /* ssdpsearch.cpp in Sources */,
 				ED86231D1AC29DB700CB818B /* macaddress.cpp in Sources */,
 				ED8623201AC29DB700CB818B /* fnv.cpp in Sources */,
@@ -300,6 +315,7 @@
 				ED86231A1AC29DB700CB818B /* socketcomm.cpp in Sources */,
 				ED8623061AC29DB600CB818B /* i2c.cpp in Sources */,
 				ED8623211AC29DB700CB818B /* logger.cpp in Sources */,
+				ED0A3B411FB272C200F3FB89 /* spi.cpp in Sources */,
 				EDB1E2A31AF3A60D0013A92D /* patternqueue.cpp in Sources */,
 				EDA79BBF1AF12667004EDEE1 /* patterncontainer.cpp in Sources */,
 				ED8623131AC29DB700CB818B /* utils.cpp in Sources */,
@@ -329,19 +345,29 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -374,13 +400,21 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
@@ -388,6 +422,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -408,7 +443,11 @@
 		ED8622C71AC29D4800CB818B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "${inherited}";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"/usr/local/include/json-c",
+					"$(PROJECT_DIR)/src/p44utils/thirdparty",
+				);
 				LIBRARY_SEARCH_PATHS = "${inherited}";
 				OTHER_LDFLAGS = (
 					"-ljson-c",
@@ -421,7 +460,11 @@
 		ED8622C81AC29D4800CB818B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "${inherited}";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"/usr/local/include/json-c",
+					"$(PROJECT_DIR)/src/p44utils/thirdparty",
+				);
 				LIBRARY_SEARCH_PATHS = "${inherited}";
 				OTHER_LDFLAGS = (
 					"-ljson-c",

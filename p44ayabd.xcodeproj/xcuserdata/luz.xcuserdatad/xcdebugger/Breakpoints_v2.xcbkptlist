@@ -6,17 +6,35 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
+            condition = "o==0x00000001006004a0"
             continueAfterRunningActions = "No"
-            filePath = "src/p44utils/fdcomm.cpp"
-            timestampString = "449051434.761313"
+            filePath = "src/p44utils/p44obj.cpp"
+            timestampString = "452885268.295033"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "150"
-            endingLineNumber = "150"
-            landmarkName = "FdComm::setTransmitHandler(FdCommCB aTransmitHandler)"
-            landmarkType = "5">
+            startingLineNumber = "31"
+            endingLineNumber = "31"
+            landmarkName = "intrusive_ptr_add_ref(P44Obj* o)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            condition = "o==0x00000001006004a0"
+            continueAfterRunningActions = "No"
+            filePath = "src/p44utils/p44obj.cpp"
+            timestampString = "452885300.511974"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "36"
+            endingLineNumber = "36"
+            landmarkName = "intrusive_ptr_release(P44Obj* o)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

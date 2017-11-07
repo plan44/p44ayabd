@@ -22,7 +22,7 @@
 #ifndef __p44ayabd__ayabcomm__
 #define __p44ayabd__ayabcomm__
 
-#include "p44_common.hpp"
+#include "p44utils_common.hpp"
 
 #include "serialqueue.hpp"
 
@@ -117,7 +117,7 @@ namespace p44 {
 
     void sendCommand(size_t aCmdLength, uint8_t *aCmdBytesP, StatusCB aStatusCB);
     void sendResponse(size_t aRespLength, uint8_t *aRespBytesP);
-    void ayabCmdResponseHandler(StatusCB aStatusCB, SerialOperationPtr aOperation, ErrorPtr aError);
+    void ayabCmdResponseHandler(StatusCB aStatusCB, SerialOperationReceivePtr aRecOp, ErrorPtr aError);
 
     void ayabVersionResponseHandler(ErrorPtr aError);
     void ayabStartedResponseHandler(ErrorPtr aError);

@@ -225,7 +225,7 @@ public:
           restartAyab(true);
         }
         else {
-          err = WebError::err(500, "Unknown action for /machine");
+          err = WebError::webErr(500, "Unknown action for /machine");
         }
       }
       else {
@@ -260,7 +260,7 @@ public:
           patternQueue->saveState(statedir.c_str(), false);
         }
         else {
-          err = WebError::err(500, "Unknown action for /queue");
+          err = WebError::webErr(500, "Unknown action for /queue");
         }
       }
       else {
@@ -287,7 +287,7 @@ public:
       }
     }
     else {
-      err = WebError::err(500, "Unknown URI");
+      err = WebError::webErr(500, "Unknown URI");
     }
     // return error or ok
     if (Error::isOK(err))
@@ -403,8 +403,6 @@ int main(int argc, char **argv)
   // prevent debug output before application.main scans command line
   SETLOGLEVEL(LOG_EMERG);
   SETERRLEVEL(LOG_EMERG, false); // messages, if any, go to stderr
-  // create the mainloop
-  MainLoop::currentMainLoop().setLoopCycleTime(MAINLOOP_CYCLE_TIME_uS);
   // create app with current mainloop
   static P44ayabd application;
   // pass control

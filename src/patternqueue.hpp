@@ -23,7 +23,7 @@
 #ifndef __p44ayabd__patternqueue__
 #define __p44ayabd__patternqueue__
 
-#include "p44_common.hpp"
+#include "p44utils_common.hpp"
 
 #include "jsonobject.hpp"
 

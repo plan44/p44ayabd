@@ -55,8 +55,12 @@ p44ayabd_SOURCES = \
   src/p44utils/gpio.cpp \
   src/p44utils/gpio.h \
   src/p44utils/gpio.hpp \
+  src/p44utils/pwm.cpp \
+  src/p44utils/pwm.hpp \
   src/p44utils/i2c.cpp \
   src/p44utils/i2c.hpp \
+  src/p44utils/spi.cpp \
+  src/p44utils/spi.hpp \
   src/p44utils/iopin.cpp \
   src/p44utils/iopin.hpp \
   src/p44utils/jsoncomm.cpp \
@@ -85,7 +89,7 @@ p44ayabd_SOURCES = \
   src/p44utils/ssdpsearch.hpp \
   src/p44utils/utils.cpp \
   src/p44utils/utils.hpp \
-  src/p44utils/p44_common.hpp \
+  src/p44utils/p44utils_common.hpp \
   src/ayabcomm.cpp \
   src/ayabcomm.hpp \
   src/patterncontainer.cpp \

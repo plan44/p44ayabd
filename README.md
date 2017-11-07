@@ -98,6 +98,8 @@ Clone the p44ayabd repository
 
 	cd ~
 	git clone https://github.com/plan44/p44ayabd
+	git submodule init
+	git submodule update
 
 We need a newer libpng than what Raspian has by default (that is - *had* at the time of writing this in 2015 - so you *might* be able to replace this step by simply *apt-get install libpng-dev* on a newer Raspian):
 

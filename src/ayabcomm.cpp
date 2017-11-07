@@ -26,7 +26,7 @@
 
 using namespace p44;
 
-#define AYAB_BAUDRATE 115200
+#define AYAB_COMMAPARMS "115200,8,N,1"
 
 
 // AYAB serial protocol
@@ -166,24 +166,24 @@ AyabComm::~AyabComm()
 
 void AyabComm::setConnectionSpecification(const char *aConnectionSpec, uint16_t aDefaultPort)
 {
-  LOG(LOG_DEBUG, "AyabComm::setConnectionSpecification: %s\n", aConnectionSpec);
+  LOG(LOG_DEBUG, "AyabComm::setConnectionSpecification: %s", aConnectionSpec);
   if (strcmp(aConnectionSpec,"simulation")==0) {
     // simulation mode
     simulated = true;
     // install console key to trigger rows
     ConsoleKeyManager::sharedKeyManager()->setKeyPressHandler(boost::bind(&AyabComm::simulationControlKeyHandler, this, _1));
-    LOG(LOG_NOTICE, "SIMULATION MODE: press N to request next row, F to toggle full speed run\n");
+    LOG(LOG_NOTICE, "SIMULATION MODE: press N to request next row, F to toggle full speed run");
     status = ayabstatus_connected;
   }
   else {
-    serialComm->setConnectionSpecification(aConnectionSpec, aDefaultPort, AYAB_BAUDRATE);
+    serialComm->setConnectionSpecification(aConnectionSpec, aDefaultPort, AYAB_COMMAPARMS);
     // open connection so we can receive
     if (serialComm->requestConnection()) {
       status = ayabstatus_connected;
       serialComm->setDTR(false); // arduino reset
     }
     // set accept buffer for re-assembling messages before processing
-    setAcceptBuffer(4); // largest message is 4 bytes (2 + possibly CRLF)
+    setAcceptBuffer(20); // largest message is 10 bytes (8 + possibly CRLF)
   }
 }
 
@@ -201,36 +201,38 @@ bool AyabComm::simulationControlKeyHandler(char aKey)
       sendNextRow();
   }
   else if (toupper(aKey)=='Q') {
-    Application::sharedApplication()->terminateAppWith(WebError::err(500,"Simulation mode, user hit Q key"));
+    Application::sharedApplication()->terminateAppWith(WebError::webErr(500,"Simulation mode, user hit Q key"));
   }
   return true; // fully handled
 }
 
 
 
+
+
 void AyabComm::sendCommand(size_t aCmdLength, uint8_t *aCmdBytesP, StatusCB aStatusCB)
 {
   if (simulated) {
-    LOG(LOG_DEBUG,"Simulated sending of Command to AYAB, %d bytes\n", aCmdLength+1);
+    LOG(LOG_DEBUG,"Simulated sending of Command to AYAB, %lu bytes", aCmdLength+1);
     aStatusCB(ErrorPtr());
     return;
   }
-  SerialOperationSendAndReceive *opP = new SerialOperationSendAndReceive(
-    aCmdLength,
-    aCmdBytesP,
-    #if AYAB_SENDS_EXTRA_CRLF
-    4,
-    #else
-    2,
-    #endif
-    boost::bind(&AyabComm::ayabCmdResponseHandler, this, aStatusCB, _1, _3)
-  );
-  if (opP) {
-    opP->answersInSequence = true;
-    opP->receiveTimeoout = 20*Second; // large timeout, because it can really take time until all expected answers are received
-    SerialOperationPtr op(opP);
-    queueSerialOperation(op);
-  }
+  SerialOperationSendPtr sendOp = SerialOperationSendPtr(new SerialOperationSend);
+  sendOp->setDataSize(aCmdLength);
+  sendOp->appendData(aCmdLength, aCmdBytesP);
+  // prepare response reading operation
+  SerialOperationReceivePtr recOp = SerialOperationReceivePtr(new SerialOperationReceive);
+  #if AYAB_SENDS_EXTRA_CRLF
+  recOp->setExpectedBytes(4); // expected 4 response bytes
+  #else
+  recOp->setExpectedBytes(2); // expected 2 response bytes
+  #endif
+  recOp->inSequence = true;
+  recOp->setTimeout(20*Second); // large timeout, because it can really take time until all expected answers are received
+  recOp->setCompletionCallback(boost::bind(&AyabComm::ayabCmdResponseHandler, this, aStatusCB, recOp, _1));
+  // chain response op
+  sendOp->setChainedOperation(recOp);
+  queueSerialOperation(sendOp);
   // process operations
   processOperations();
 }
@@ -239,14 +241,13 @@ void AyabComm::sendCommand(size_t aCmdLength, uint8_t *aCmdBytesP, StatusCB aSta
 void AyabComm::sendResponse(size_t aRespLength, uint8_t *aRespBytesP)
 {
   if (simulated) {
-    LOG(LOG_DEBUG,"Simulated sending of response to AYAB, %d bytes\n", aRespLength+1);
+    LOG(LOG_DEBUG,"Simulated sending of response to AYAB, %lu bytes", aRespLength+1);
     return;
   }
-  SerialOperationSend *opP = new SerialOperationSend(aRespLength, aRespBytesP, NULL);
-  if (opP) {
-    SerialOperationPtr op(opP);
-    queueSerialOperation(op);
-  }
+  SerialOperationSendPtr sendOp = SerialOperationSendPtr(new SerialOperationSend);
+  sendOp->setDataSize(aRespLength);
+  sendOp->appendData(aRespLength, aRespBytesP);
+  queueSerialOperation(sendOp);
   // process operations
   processOperations();
 }
@@ -254,34 +255,30 @@ void AyabComm::sendResponse(size_t aRespLength, uint8_t *aRespBytesP)
 
 
 
-void AyabComm::ayabCmdResponseHandler(StatusCB aStatusCB, SerialOperationPtr aOperation, ErrorPtr aError)
+void AyabComm::ayabCmdResponseHandler(StatusCB aStatusCB, SerialOperationReceivePtr aRecOp, ErrorPtr aError)
 {
-  // response to commands sent
-  SerialOperationReceivePtr ropP = boost::dynamic_pointer_cast<SerialOperationReceive>(aOperation);
-  if (ropP) {
-    // get received data
-    if (!aError && ropP->getDataSize()>=2) {
-      uint8_t resp = ropP->getDataP()[0];
-      if (resp==(AYABCMD_FROM_AYAB|AYABCMD_CONFIRM|AYABMSGID_INFO)) {
-        // params: 0xaa 0xbb 0xcc - aa = API Version Identifier, bb = Firmware Major Version, cc = Firmware Minor Version
-        uint8_t ver = ropP->getDataP()[1];
-        uint8_t maj = ropP->getDataP()[2];
-        uint8_t min = ropP->getDataP()[3];
-        LOG(LOG_INFO, "AYAB API version: %d, Firmware Version %d.%d\n", ver, maj, min);
-        if (ver!=AYAB_EXPECTED_FIRMWARE) {
-          aError = TextError::err("AYAB reports firmware version %d, but we expect version %d", ver, AYAB_EXPECTED_FIRMWARE);
-        }
+  // get received data
+  if (!aError && aRecOp->getDataSize()>=2) {
+    uint8_t resp = aRecOp->getDataP()[0];
+    if (resp==(AYABCMD_FROM_AYAB|AYABCMD_CONFIRM|AYABMSGID_INFO)) {
+      // params: 0xaa 0xbb 0xcc - aa = API Version Identifier, bb = Firmware Major Version, cc = Firmware Minor Version
+      uint8_t ver = aRecOp->getDataP()[1];
+      uint8_t maj = aRecOp->getDataP()[2];
+      uint8_t min = aRecOp->getDataP()[3];
+      LOG(LOG_INFO, "AYAB API version: %d, Firmware Version %d.%d", ver, maj, min);
+      if (ver!=AYAB_EXPECTED_FIRMWARE) {
+        aError = TextError::err("AYAB reports firmware version %d, but we expect version %d", ver, AYAB_EXPECTED_FIRMWARE);
       }
-      else if (resp==(AYABCMD_FROM_AYAB|AYABCMD_CONFIRM|AYABMSGID_START)) {
-        uint8_t sta = ropP->getDataP()[1];
-        LOG(LOG_INFO, "AYAB start status: %d\n", sta);
-        if (sta!=1) {
-          aError = TextError::err("AYAB start command failed, AYAB status code = %d", sta);
-        }
+    }
+    else if (resp==(AYABCMD_FROM_AYAB|AYABCMD_CONFIRM|AYABMSGID_START)) {
+      uint8_t sta = aRecOp->getDataP()[1];
+      LOG(LOG_INFO, "AYAB start status: %d", sta);
+      if (sta!=1) {
+        aError = TextError::err("AYAB start command failed, AYAB status code = %d", sta);
       }
-      else {
-        aError = TextError::err("AYAB invalid response for command: 0x%02X", resp);
-      }
+    }
+    else {
+      aError = TextError::err("AYAB invalid response for command: 0x%02X", resp);
     }
   }
   if (aStatusCB) {
@@ -315,7 +312,7 @@ ssize_t AyabComm::acceptExtraBytes(size_t aNumBytes, uint8_t *aBytes)
     }
     // AYAB requests next line
     // params: 0xaa - aa = line number (Range: 0..255)
-    LOG(LOG_INFO, "AYAB requests data for row #%d (overall count %d)\n", nextRequestRow, rowCount);
+    LOG(LOG_INFO, "AYAB requests data for row #%d (overall count %d)", nextRequestRow, rowCount);
     uint8_t rowNo = aBytes[1];
     size_t consumed = 2;
     // swallow possible extra CRLF
@@ -325,7 +322,7 @@ ssize_t AyabComm::acceptExtraBytes(size_t aNumBytes, uint8_t *aBytes)
     }
     // process row request
     if (rowNo!=nextRequestRow) {
-      LOG(LOG_ERR, "AYAB requests line #%d, we would have expected #%d\n", rowNo, nextRequestRow);
+      LOG(LOG_ERR, "AYAB requests line #%d, we would have expected #%d", rowNo, nextRequestRow);
       nextRequestRow = rowNo;
     }
     // obtain and send next row
@@ -350,9 +347,9 @@ ssize_t AyabComm::acceptExtraBytes(size_t aNumBytes, uint8_t *aBytes)
       "AYAB indicates state:\n"
       "- ready: %d\n"
       "- left hall sensor: %d\n"
-      "- right hall sensor: %d\n",
-      "- carriage: %s\n",
-      "- needle number in progress: %d\n",
+      "- right hall sensor: %d\n"
+      "- carriage: %s\n"
+      "- needle number in progress: %d",
       aBytes[1],
       (aBytes[2]<<8)+aBytes[3],
       (aBytes[4]<<8)+aBytes[5],
@@ -362,7 +359,7 @@ ssize_t AyabComm::acceptExtraBytes(size_t aNumBytes, uint8_t *aBytes)
     return 8; // consumed all
   }
   // consume all other data to re-sync
-  LOG(LOG_DEBUG, "%d extra bytes from AYAB discarded\n", aNumBytes);
+  LOG(LOG_DEBUG, "%zu extra bytes from AYAB discarded", aNumBytes);
   return (ssize_t)aNumBytes;
 }
 
@@ -394,7 +391,7 @@ void AyabComm::sendNextRow()
       for (int i=0; i<row->rowSize; i++) {
         rs += row->rowData[i] ? 'X' : '.';
       }
-      LOG(LOG_NOTICE,"Row No. %4d : %s\n", rowCount, rs.c_str());
+      LOG(LOG_NOTICE,"Row No. %4d : %s", rowCount, rs.c_str());
     }
     // MSByte contains the first needle in bit0, the eigth needle in bit7, the ninth needle is bit0 in second byte, etc.
     for (int i=0; i<row->rowSize; i++) {
@@ -408,7 +405,7 @@ void AyabComm::sendNextRow()
     nextRequestRow++;
   }
   else {
-    LOG(LOG_NOTICE, "--- End of knitting job - total row count %d\n", rowCount);
+    LOG(LOG_NOTICE, "--- End of knitting job - total row count %d", rowCount);
     fullspeedsim = false; // end full speed simulation at end of job
     // no more rows, send empty one with lastline flag set
     rowresponse[rowresponselen-2] = 1; // lastline
@@ -430,7 +427,7 @@ void AyabComm::sendNextRow()
 void AyabComm::restart(SimpleCB aDoneCB)
 {
   serialComm->setDTR(true); // arduino reset
-  LOG(LOG_NOTICE, "restarting AYAB - DTR set active and waiting 3 seconds\n");
+  LOG(LOG_NOTICE, "restarting AYAB - DTR set active and waiting 3 seconds");
   status = ayabstatus_offline;
   MainLoop::currentMainLoop().executeOnce(boost::bind(&AyabComm::endReset, this, aDoneCB), 3*Second);
 }
@@ -439,7 +436,7 @@ void AyabComm::restart(SimpleCB aDoneCB)
 void AyabComm::endReset(SimpleCB aDoneCB)
 {
   serialComm->setDTR(false); // arduino reset
-  LOG(LOG_NOTICE, "restarting AYAB - DTR set inactive again and waiting 3 seconds\n");
+  LOG(LOG_NOTICE, "restarting AYAB - DTR set inactive again and waiting 3 seconds");
   status = ayabstatus_connected;
   MainLoop::currentMainLoop().executeOnce(boost::bind(&AyabComm::restarted, this, aDoneCB), 3*Second);
 }
@@ -447,7 +444,7 @@ void AyabComm::endReset(SimpleCB aDoneCB)
 
 void AyabComm::restarted(SimpleCB aDoneCB)
 {
-  LOG(LOG_NOTICE, "restarting AYAB done - should be ready in 3 seconds\n");
+  LOG(LOG_NOTICE, "restarting AYAB done - should be ready in 3 seconds");
   if (aDoneCB) aDoneCB();
 }
 
@@ -467,7 +464,7 @@ bool AyabComm::startKnittingJob(unsigned aFirstNeedle, unsigned aWidth, AyabRowC
   firstNeedle = aFirstNeedle;
   width = aWidth;
   // check version first
-  LOG(LOG_NOTICE, "+++ Start of knitting job - firstNeedle=%d, width=%d\n", firstNeedle, width);
+  LOG(LOG_NOTICE, "+++ Start of knitting job - firstNeedle=%d, width=%d", firstNeedle, width);
   uint8_t cmd;
   cmd = AYABCMD_FROM_HOST|AYABCMD_REQUEST|AYABMSGID_INFO;
   sendCommand(1, &cmd, boost::bind(&AyabComm::ayabVersionResponseHandler, this, _1));

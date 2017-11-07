@@ -74,10 +74,10 @@ ErrorPtr PatternContainer::readPNGfromFile(const char *aPNGFileName)
     // PNG_IMAGE_SIZE macro uses the information about the image (width,
     // height and format) stored in 'image'.
     pngBuffer = (png_bytep)malloc(PNG_IMAGE_SIZE(pngImage));
-    LOG(LOG_INFO, "Image size in bytes = %d\n", PNG_IMAGE_SIZE(pngImage));
-    LOG(LOG_INFO, "Image width = %d\n", pngImage.width);
-    LOG(LOG_INFO, "Image height = %d\n", pngImage.height);
-    LOG(LOG_INFO, "Image width*height = %d\n", pngImage.height*pngImage.width);
+    LOG(LOG_INFO, "Image size in bytes = %d", PNG_IMAGE_SIZE(pngImage));
+    LOG(LOG_INFO, "Image width = %d", pngImage.width);
+    LOG(LOG_INFO, "Image height = %d", pngImage.height);
+    LOG(LOG_INFO, "Image width*height = %d", pngImage.height*pngImage.width);
     if (pngBuffer==NULL) {
       return TextError::err("Could not allocate buffer for reading PNG file %s", aPNGFileName);
     }
