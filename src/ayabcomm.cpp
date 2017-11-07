@@ -30,8 +30,10 @@ using namespace p44;
 
 
 // AYAB serial protocol
-#define AYAB_EXPECTED_FIRMWARE 3 // that's what we found so far
+#define AYAB_EXPECTED_FIRMWARE 4 // current version per November 2017
 #define AYAB_SENDS_EXTRA_CRLF 1 // above version sends extra CRLF in confirm commands
+
+#define AYABCMD_DEBUG 0x23 // debug message from hardware
 
 #define AYABCMD_FROM_HOST 0x00 // command comes from host
 #define AYABCMD_FROM_AYAB 0x80 // command comes from AYAB
@@ -39,11 +41,12 @@ using namespace p44;
 #define AYABCMD_CONFIRM 0x40 // command is a confirmation
 #define AYABCMD_MSGID_MASK 0x0F // message identifier mask
 
+
 #define AYABMSGID_START 1 // start
 #define AYABMSGID_LINE 2 // line
 #define AYABMSGID_INFO 3 // info
-
-#define AYABCMD_REQINFO (AYABCMD_FROM_HOST|AYABCMD_REQUEST|AYABMSGID_INFO)
+#define AYABMSGID_STATE 4 // state (v4 only, from AYAB only)
+#define AYABMSGID_TEST 4 // test (v4 only, from HOST only)
 
 #pragma mark - CRC8
 
@@ -260,8 +263,11 @@ void AyabComm::ayabCmdResponseHandler(StatusCB aStatusCB, SerialOperationPtr aOp
     if (!aError && ropP->getDataSize()>=2) {
       uint8_t resp = ropP->getDataP()[0];
       if (resp==(AYABCMD_FROM_AYAB|AYABCMD_CONFIRM|AYABMSGID_INFO)) {
+        // params: 0xaa 0xbb 0xcc - aa = API Version Identifier, bb = Firmware Major Version, cc = Firmware Minor Version
         uint8_t ver = ropP->getDataP()[1];
-        LOG(LOG_INFO, "AYAB Firmware version: %d\n", ver);
+        uint8_t maj = ropP->getDataP()[2];
+        uint8_t min = ropP->getDataP()[3];
+        LOG(LOG_INFO, "AYAB API version: %d, Firmware Version %d.%d\n", ver, maj, min);
         if (ver!=AYAB_EXPECTED_FIRMWARE) {
           aError = TextError::err("AYAB reports firmware version %d, but we expect version %d", ver, AYAB_EXPECTED_FIRMWARE);
         }
@@ -288,12 +294,27 @@ void AyabComm::ayabCmdResponseHandler(StatusCB aStatusCB, SerialOperationPtr aOp
 
 ssize_t AyabComm::acceptExtraBytes(size_t aNumBytes, uint8_t *aBytes)
 {
-  // got bytes without having sent command before: must be Line request
+  // got bytes without having sent command before: must be Line request or state indication
+  if (aBytes[0]=='#') {
+    // Debug comment text line: text terminated by \r\n
+    int idx=1;
+    while (idx<aNumBytes-1) {
+      if (aBytes[idx]=='\r') {
+        string msg((char *)(aBytes+1), idx-1);
+        LOG(LOG_INFO, "Debug message from AYAB: %s", msg.c_str());
+        return idx+2; // including # and CRLF
+      }
+      idx++;
+    }
+    return NOT_ENOUGH_BYTES;
+  }
   if (aBytes[0]==(AYABCMD_FROM_AYAB|AYABCMD_REQUEST|AYABMSGID_LINE)) {
     // must be 2 bytes at least
-    if (aNumBytes<2)
+    if (aNumBytes<2) {
       return NOT_ENOUGH_BYTES;
+    }
     // AYAB requests next line
+    // params: 0xaa - aa = line number (Range: 0..255)
     LOG(LOG_INFO, "AYAB requests data for row #%d (overall count %d)\n", nextRequestRow, rowCount);
     uint8_t rowNo = aBytes[1];
     size_t consumed = 2;
@@ -312,6 +333,34 @@ ssize_t AyabComm::acceptExtraBytes(size_t aNumBytes, uint8_t *aBytes)
     // the 2 request bytes are consumed
     return consumed;
   }
+  else if (aBytes[0]==(AYABCMD_FROM_AYAB|AYABCMD_REQUEST|AYABMSGID_STATE)) {
+    if (aNumBytes<8) {
+      return NOT_ENOUGH_BYTES;
+    }
+    // 0x0a 0xBB 0xbb 0xCC 0xcc 0xdd 0xee
+    // - a = ready (0 = false, 1 = true)
+    // - BBbb = int left hall sensor value
+    // - CCcc = int right hall sensor value
+    // - dd = the carriage
+    //   0 = no carriage detected
+    //   1 = knit carriage “Strickschlitten”
+    //   2 = hole carriage “Lochmusterschlitten”
+    // - ee = the needle number currently in progress
+    LOG(LOG_NOTICE,
+      "AYAB indicates state:\n"
+      "- ready: %d\n"
+      "- left hall sensor: %d\n"
+      "- right hall sensor: %d\n",
+      "- carriage: %s\n",
+      "- needle number in progress: %d\n",
+      aBytes[1],
+      (aBytes[2]<<8)+aBytes[3],
+      (aBytes[4]<<8)+aBytes[5],
+      aBytes[6]==0 ? "<none>" : (aBytes[6]==1 ? "Knit" : "Hole"),
+      aBytes[7]
+    );
+    return 8; // consumed all
+  }
   // consume all other data to re-sync
   LOG(LOG_DEBUG, "%d extra bytes from AYAB discarded\n", aNumBytes);
   return (ssize_t)aNumBytes;
@@ -328,6 +377,11 @@ void AyabComm::sendNextRow()
   }
   // send data or stop
   status = ayabstatus_knitting;
+  // 0xaa 0xbb[24, 23, 22, ... 1, 0] 0xcc 0xdd
+  // - aa = line number (Range: 0..255)
+  // - bb[24 to 0] = binary pixel data
+  // - cc = flags (bit 0: lastLine)
+  // - dd = CRC8 Checksum
   const int rowresponselen = 29;
   uint8_t rowresponse[rowresponselen];
   memset(rowresponse,0,rowresponselen); // init to default
