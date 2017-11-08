@@ -1,4 +1,4 @@
-AC_INIT([vdcd], [0.1], [luz@plan44.ch], [p44ayabd], [http://www.plan44.ch/])
+AC_INIT([p44ayabd], [0.1], [luz@plan44.ch], [p44ayabd], [http://www.plan44.ch/])
 AC_PREREQ([2.59])
 
 AC_CONFIG_AUX_DIR(configure_aux)
@@ -37,28 +37,22 @@ AM_CONDITIONAL([RASPBERRYPI], [test x$raspberrypi = xtrue])
 AC_CHECK_LIB(m, atan2, [], [AC_MSG_ERROR([Could not find math lib (m)])])
 AC_CHECK_LIB(rt, clock_gettime, [], [AC_MSG_ERROR([Could not find rt lib for clock_gettime])])
 AC_CHECK_LIB(dl, dlopen, [], [AC_MSG_ERROR([Could not find libdl])])
-#AC_CHECK_LIB(json-c, json_tokener_get_error, [], [AC_MSG_ERROR([Could not find JSON-C / libjson0 with json_tokener_get_error supported (>=0.10)])])
-
+AC_CHECK_LIB(json-c, json_tokener_get_error, [], [AC_MSG_ERROR([Could not find JSON-C / libjson0 with json_tokener_get_error supported (>=0.10)])])
+AC_CHECK_LIB(png, png_image_begin_read_from_file, [], [AC_MSG_ERROR([Could not find libpng with png_image_begin_read_from_file supported (>=1.6)])])
 
 
 PKG_PROG_PKG_CONFIG
 
-# AM_COND_IF ([RASPBERRYPI], [
-#   dnl # hacked RPi cross build
-#
-# ], [
-#
-#   dnl # normal Linux build
-#   PKG_CHECK_MODULES([JSONC], [json], [],
-#       [
-#           AC_MSG_ERROR([Missing json-c / libjson0])
-#       ])
-#
-#   PKG_CHECK_MODULES([JSONC], [json >= 0.10 ], [],
-#       [
-#           AC_MSG_ERROR([$JSON_PKG_ERRORS])
-#       ])
-#
+
+AM_COND_IF([RASPBERRYPI], [], [
+  PKG_CHECK_MODULES([JSONC], [json-c >= 0.10 ], [], [
+    AC_MSG_ERROR([$JSON_PKG_ERRORS])
+  ])
+
+  PKG_CHECK_MODULES([PNG], [libpng], [], [
+    AC_MSG_ERROR([$PNG_PKG_ERRORS])
+  ])
+])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h inttypes.h limits.h netdb.h netinet/in.h stddef.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h unistd.h sys/resource.h], [], [AC_MSG_ERROR([required system header not found])])

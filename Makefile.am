@@ -17,9 +17,7 @@ if RASPBERRYPI
 TOOLCHAIN_SYSROOT = /Volumes/xtools/arm-none-linux-gnueabi/arm-none-linux-gnueabi/sysroot
 p44ayabd_LDADD = $(PTHREAD_LIBS) -lpng -ljson-c -ldl -L${TOOLCHAIN_SYSROOT}/${libdir}/arm-linux-gnueabihf
 else
-# automatic libs does not work right now due to commented out checks in autoconf.ac, so specify -l directly
-# p44ayabd_LDADD = $(JSONC_LIBS) $(PTHREAD_LIBS)
-p44ayabd_LDADD = $(PTHREAD_LIBS) -lpng16 -ljson -ldl
+p44ayabd_LDADD = $(JSONC_LIBS) $(PTHREAD_LIBS) $(PNG_LIBS)
 endif
 
 
@@ -28,6 +26,7 @@ p44ayabd_CXXFLAGS = \
   -I ${srcdir}/src \
   ${BOOST_CPPFLAGS} \
   ${JSONC_CFLAGS} \
+  ${PNG_CFLAGS} \
   ${PTHREAD_CFLAGS} \
   ${p44ayabd_DEBUG} \
   -D DISABLE_OLA=1
