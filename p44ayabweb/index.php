@@ -219,6 +219,8 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       var cursorUpdaterTimeout = 0;
 
       var patternWidth = 0;
+      var ribber = false;
+      var colors = 0;
 
       function updateMachineStatus()
       {
@@ -318,6 +320,8 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           var state = response.result;
           var queue = state.queue;
           patternWidth = state.patternWidth;
+          colors = state.colors;
+          ribber = state.ribber;
           var queueHTML = '<table><tr onclick="javascript:queueClick(event);" height="' + patternWidth.toString() + '">';
           for (var i in queue) {
             var qe = queue[i];
@@ -340,6 +344,8 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           queueHTML += '</tr><table>';
           $('#queueimages').html(queueHTML);
           $('#patternWidth').val(patternWidth.toString());
+          $('#colors').val(colors.toString());
+          $('#ribber').prop('checked', ribber);
           // also update cursor
           updateCursor();
         });
@@ -381,17 +387,16 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       }
 
 
-      function applyNewWidth()
+      function applyNewParams()
       {
         var width = $('#patternWidth').val();
-        var query = {
-          "setWidth" : width
-        };
+        var ribber = $('#ribber').is(':checked');
+        var colors = $('#colors').val();
         $.ajax({
           url: '/api.php/machine',
           type: 'post',
           dataType: 'json',
-          data: JSON.stringify(query),
+          data: JSON.stringify({ "setWidth" : width, "setRibber":ribber, "setColors":colors }),
           timeout: 3000
         }).done(function(response) {
           updateQueue();
@@ -558,17 +563,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       echo('<li>fertig!</li></ul></div>'); flush();
       ob_start();
 
-    /*
-      // %%% just output for now
-      header("Content-Type: image/png");
-      echo $image;
-      exit(0);
-
-    */
     }
-
-
-
 
     ?>
     <div id="machine">
@@ -576,7 +571,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         <button onClick="javascript:restartKnitting();">Neustart</button>
       </div>
       <div id="machinerestart" style="display:none;">Stricken neustarten: Wagen ganz nach links, dann rechts bis 2*beep
-        <button onClick="javascript:restartKnitting();">Neustart</button>        
+        <button onClick="javascript:restartKnitting();">Neustart</button>
       </div>
       <div id="machineerr" style="display:none;">Nicht betriebsbereit, bitte warten</div>
       <div id="queue">
@@ -608,22 +603,27 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
             <label for="fontname">Schriftart:</label>
             <select name="fontname" id="fontname">
               <?php
-              $imagick = new Imagick();
-              $fonts = $imagick->queryFonts();
-              foreach($fonts as $font) {
-                echo('<option' . ($font==$_REQUEST['fontname'] ? ' selected="true"' : '') . ' value="' . $font . '">' . $font . '</option>');
-              }
+//               $imagick = new Imagick();
+//               $fonts = $imagick->queryFonts();
+//               foreach($fonts as $font) {
+//                 echo('<option' . ($font==$_REQUEST['fontname'] ? ' selected="true"' : '') . ' value="' . $font . '">' . $font . '</option>');
+//               }
               ?>
             </select>
             <label for="fontsize">Schriftgrösse:</label>
-            <input type="number" min="9" max="300" name="fontsize" id="fontsize" value="<?php echo $_REQUEST['fontsize']; ?>"/>
+            <input type="number" min="9" max="300" name="fontsize" id="fontsize" value="<?php echo $_REQUEST['fontsize']; ?>" />
           </form>
         </p>
 
         <p>
           <form>
             <label for="patternWidth">Musterbreite:</label>
-            <input type="number" min="10" max="200" name="patternWidth" id="patternWidth"/>&nbsp;<button onClick="javascript:applyNewWidth()">Breite neu setzen</button>
+            <input type="number" min="10" max="200" name="patternWidth" id="patternWidth" />
+            <label for="ribber">Doppelbett:</label>
+            <input type="checkbox" name="ribber" id="ribber" value="1"/>
+            <label for="colors">Anzahl Farben:</label>
+            <input type="number" name="colors" min="2" max="4" id="colors" />
+            &nbsp;<button onClick="javascript:applyNewParams()">Parameter neu setzen</button>
           </form>
         </p>
 

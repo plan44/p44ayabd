@@ -72,9 +72,16 @@ namespace p44 {
     // the cursor
     int cursorEntry; ///< the entry where the cursor is currently in
     int cursorOffset; ///< the position within the entry
+
+    // the row phase (for ribber mode)
+    int rowPhase;
+
     // the width
     int patternWidth;
 
+    // ribber and colorchanger
+    bool ribber; ///< if set: mode for ribber + color changer
+    int numColors; ///< number of colors
 
   public:
 
@@ -99,21 +106,46 @@ namespace p44 {
     /// @return returns start pixel pos of image relative to beginning of the queue
     int imageStartPos(int aImageIndex = -1);
 
+    /// return the currently active color(s)
+    /// @return bitmask with color0=bit0, color1=bit1 etc.
+    uint8_t activeColors();
+
+    /// check if pattern has the specified color number at a certain index
+    /// @param aAtWith needle number where to sample color
+    /// @return color number (0=background, 1..3=other colors)
+    int colorNoAtCursor(int aAtWidth);
+
+    /// get activation state of needle at cursor in current phase
+    /// @param aAtWith needle number where to check status
+    bool needleAtCursor(int aAtWidth);
+
+    /// Start new phase, auto-increments cursor when last phase is done
+    /// @return returns phase number
+    int nextPhase();
+
     /// Move cursor to new row
     /// @param aNewPos relative or absolute new position
     /// @param aRelative if set, aNewPos is relative to the current cursor position
     /// @note default is to advance the cursor one position
-    void moveCursor(int aNewPos = 1, bool aRelative = true, bool aBeginningOfEntry = false);
-
-    /// @param aAtWidth which pixel of the row
-    /// @return gray value from current cursor row
-    uint8_t grayAtCursor(int aAtWidth);
+    void moveCursor(int aNewPos = 1, bool aRelative = true, bool aBeginningOfEntry = false, bool aKeepPhase = false);
 
     /// @return width of pattern queue
     int width() { return patternWidth; };
 
+    /// @return true if working with ribber
+    bool ribberMode() { return ribber; };
+
+    /// @return number of colors
+    int colors() { return numColors; };
+
     /// @param set new width of queue
     ErrorPtr setWidth(int aWidth);
+
+    /// @param set ribber mode
+    ErrorPtr setRibberMode(bool aRibber);
+
+    /// @param set number of colors
+    ErrorPtr setColors(int aNumColors);
 
     /// get state as JSON
     JsonObjectPtr cursorStateJSON();

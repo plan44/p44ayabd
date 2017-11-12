@@ -213,16 +213,39 @@ public:
     }
     else if (aUri=="/machine") {
       if (aIsAction) {
+        bool needsRestart = false;
+        bool foundAction = false;
         if (aData->get("restart", o)) {
+          foundAction = true;
           if (o->boolValue()) {
-            restartAyab(true);
+            needsRestart = true;
           }
         }
-        else if (aData->get("setWidth", o)) {
+        if (aData->get("setWidth", o)) {
+          foundAction = true;
           err = patternQueue->setWidth(o->int32Value());
           patternQueue->saveState(statedir.c_str(), false);
           // also needs restart
-          restartAyab(true);
+          needsRestart = true;
+        }
+        if (aData->get("setRibber", o)) {
+          foundAction = true;
+          err = patternQueue->setRibberMode(o->boolValue());
+          patternQueue->saveState(statedir.c_str(), false);
+          // also needs restart
+          needsRestart = true;
+        }
+        if (aData->get("setColors", o)) {
+          foundAction = true;
+          err = patternQueue->setColors(o->int32Value());
+          patternQueue->saveState(statedir.c_str(), false);
+          // also needs restart
+          needsRestart = true;
+        }
+        if (foundAction) {
+          if (needsRestart) {
+            restartAyab(true);
+          }
         }
         else {
           err = WebError::webErr(500, "Unknown action for /machine");
@@ -382,9 +405,9 @@ public:
         row = AyabRowPtr(new AyabRow);
         row->setRowSize(w);
         for (int y=w-1; y>=0; --y) {
-          row->setRowPixel(y, patternQueue->grayAtCursor(y)>128);
+          row->setRowPixel(y, patternQueue->needleAtCursor(y));
         }
-        patternQueue->moveCursor(); // next
+        patternQueue->nextPhase(); // next
       }
       // check for end of knit
       if (!row && !apiMode) {

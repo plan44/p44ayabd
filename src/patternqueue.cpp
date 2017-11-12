@@ -37,8 +37,11 @@ void PatternQueue::clear()
   // clear queue
   queue.clear();
   cursorEntry = 0; // first
+  rowPhase = 0; // first
   cursorOffset = 0;
   patternWidth = 0; // none
+  numColors = 2; // default
+  ribber = false; // none
 }
 
 
@@ -48,6 +51,24 @@ ErrorPtr PatternQueue::setWidth(int aWidth)
   stateDirty = true;
   return ErrorPtr();
 }
+
+
+ErrorPtr PatternQueue::setRibberMode(bool aRibber)
+{
+  ribber = aRibber;
+  stateDirty = true;
+  return ErrorPtr();
+}
+
+
+ErrorPtr PatternQueue::setColors(int aNumColors)
+{
+  numColors = aNumColors;
+  stateDirty = true;
+  return ErrorPtr();
+}
+
+
 
 
 
@@ -132,13 +153,79 @@ int PatternQueue::imageStartPos(int aImageIndex)
 }
 
 
+uint8_t PatternQueue::activeColors()
+{
+  if (!ribber) {
+    return 0x03; // always colors 0 and 1
+  }
+  else {
+    // FIXME: works for 2 color only for now
+    if (numColors==2) {
+      return rowPhase & 0x02 ? 0x02 : 0x01;
+    }
+  }
+  return 0; // no color because not implemented yet
+}
 
-void PatternQueue::moveCursor(int aNewPos, bool aRelative, bool aBeginningOfEntry)
+
+int PatternQueue::colorNoAtCursor(int aAtWidth)
+{
+  int currentColorNo = 0;
+  if(cursorEntry<=queue.size()) {
+    PatternQueueEntryPtr qe = queue[cursorEntry];
+    if (!qe->pattern)
+      loadPatternAtCursor();
+    if (qe->pattern) {
+      // check color
+      // FIXME: only works for 2 colors and B&W input template
+      currentColorNo = qe->pattern->grayAt(cursorOffset, aAtWidth)>128 ? 1 : 0;
+    }
+  }
+  return currentColorNo;
+}
+
+
+bool PatternQueue::needleAtCursor(int aAtWidth)
+{
+  int colorNo = colorNoAtCursor(aAtWidth);
+  // FIXME: works for 2 colors only
+  bool invert = rowPhase==1 || rowPhase==2;
+  bool hascol = colorNo!=0;
+  return invert!=hascol; // XOR
+}
+
+
+
+int PatternQueue::nextPhase()
+{
+  bool advanceCursor = false;
+  if (!ribber) {
+    rowPhase = 0; // always 0
+    advanceCursor = true;
+  }
+  else {
+    // FIXME: works for 2 colors only
+    rowPhase++;
+    if (rowPhase>=numColors*2) rowPhase = 0;
+    if (rowPhase==0 || rowPhase==2) advanceCursor = true;
+  }
+  // advance image cursor?
+  if (advanceCursor) {
+    // move to next
+    moveCursor(1, true, false, true); // keep phase
+  }
+  return rowPhase;
+}
+
+
+void PatternQueue::moveCursor(int aNewPos, bool aRelative, bool aBeginningOfEntry, bool aKeepPhase)
 {
   int oldCursor = cursorPosition();
   int newCursor = aRelative ? oldCursor+aNewPos : aNewPos;
   // not negative
   if (newCursor<0) newCursor=0;
+  // all cursor movements reset phase
+  if (!aKeepPhase) rowPhase = 0;
   // calculate entry and offset
   if (newCursor!=oldCursor) {
     // needs recalculation
@@ -171,21 +258,6 @@ void PatternQueue::moveCursor(int aNewPos, bool aRelative, bool aBeginningOfEntr
     endOfPattern() ? "YES" : "no"
   );
 }
-
-
-uint8_t PatternQueue::grayAtCursor(int aAtWidth)
-{
-  if(cursorEntry>queue.size())
-    return 0; // outside
-  PatternQueueEntryPtr qe = queue[cursorEntry];
-  if (!qe->pattern)
-    loadPatternAtCursor();
-  if (!qe->pattern)
-    return 0; // safety
-  return qe->pattern->grayAt(cursorOffset, aAtWidth);
-}
-
-
 
 
 void PatternQueue::loadPatternAtCursor()
@@ -225,6 +297,12 @@ void PatternQueue::loadState(const char *aStateDir)
     // the pattern width
     o = s->get("patternWidth");
     if (o) patternWidth = o->int32Value();
+    // ribber mode
+    o = s->get("ribber");
+    if (o) ribber = o->boolValue();
+    // number of colors
+    o = s->get("colors");
+    if (o) numColors = o->int32Value();
     // the cursor
     JsonObjectPtr cu = s->get("cursor");
     if (cu) {
@@ -232,6 +310,9 @@ void PatternQueue::loadState(const char *aStateDir)
       if (o) cursorEntry = o->int32Value();
       o = cu->get("offset");
       if (o) cursorOffset = o->int32Value();
+      // row state (for ribbing)
+      o = cu->get("phase");
+      if (o) rowPhase = o->int32Value();
     }
     // the entries of the queue
     JsonObjectPtr qes = s->get("queue");
@@ -278,6 +359,8 @@ JsonObjectPtr PatternQueue::cursorStateJSON()
   s->add("offset", JsonObject::newInt32(cursorOffset));
   s->add("position", JsonObject::newInt32(cursorPosition()));
   s->add("endOfPattern", JsonObject::newBool(endOfPattern()));
+  s->add("phase", JsonObject::newInt32(rowPhase));
+  s->add("activeColors", JsonObject::newInt32(activeColors()));
   return s;
 }
 
@@ -302,6 +385,8 @@ JsonObjectPtr PatternQueue::queueStateJSON()
   s->add("queue",queueEntriesJSON());
   s->add("cursor",cursorStateJSON());
   s->add("patternWidth",JsonObject::newInt32(patternWidth));
+  s->add("ribber",JsonObject::newBool(ribber));
+  s->add("colors",JsonObject::newInt32(numColors));
   return s;
 }
 
