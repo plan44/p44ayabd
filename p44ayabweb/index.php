@@ -531,61 +531,63 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       echo('<div id="imgwait"><p>Bitte warten, der Raspberry Pi ist nicht so schnell beim Berechnen von Bildern...</p><ul>');
       flush();
 
-      // simulate time it takes on a raspberry
-      echo('<li>warte sinnlos 2 Sekunden</li>'); flush();
-      sleep(2);
+      if (!extension_loaded("Imagick")) {
+        // simulate time it takes on a raspberry
+        echo('<li>Kein Imagick installiert - kann keinen Text generieren!</li>'); flush();
+        sleep(5);
+      }
+      else {
+        // get width (= text height)
+        $s = ayabJsonCall('/queue', false, false);
+        $state = $s['result'];
+        $patternWidth = $state['patternWidth'];
 
 
-      // get width (= text height)
-      $s = ayabJsonCall('/queue', false, false);
-      $state = $s['result'];
-      $patternWidth = $state['patternWidth'];
+        // Create Imagick objects
+        echo('<li>initialisiere</li>'); flush();
+        $image = new Imagick();
+        $draw = new ImagickDraw();
+        $color = new ImagickPixel('black');
+        $background = new ImagickPixel('white');
 
+        // Set Font properties
+        //$draw->setFont('Arial');
+        $draw->setFont($fontname);
+        $draw->setFontSize($fontsize);
+        $draw->setFillColor($color);
+        $draw->setStrokeAntialias(true);
+        $draw->setTextAntialias(true);
 
-      // Create Imagick objects
-      echo('<li>initialisiere</li>'); flush();
-      $image = new Imagick();
-      $draw = new ImagickDraw();
-      $color = new ImagickPixel('black');
-      $background = new ImagickPixel('white');
+        echo('<li>bestimme Dimension des Textes</li>'); flush();
+        // Get font metrics
+        $metrics = $image->queryFontMetrics($draw, $text);
 
-      // Set Font properties
-      //$draw->setFont('Arial');
-      $draw->setFont($fontname);
-      $draw->setFontSize($fontsize);
-      $draw->setFillColor($color);
-      $draw->setStrokeAntialias(true);
-      $draw->setTextAntialias(true);
+        // draw the text
+        $topborder = 2;
+        $spaceatend = 5;
+        echo('<li>generiere Text</li>'); flush();
+        $draw->annotation(0, $topborder+$metrics['ascender'], $text);
 
-      echo('<li>bestimme Dimension des Textes</li>'); flush();
-      // Get font metrics
-      $metrics = $image->queryFontMetrics($draw, $text);
+        // create image of correct size
+        echo('<li>generiere Bild</li>'); flush();
+        $image->newImage($spaceatend+$metrics['textWidth'], $topborder+$metrics['textHeight'], $background);
+        $image->setImageFormat('png');
+        echo('<li>zeichne Text ins Bild</li>'); flush();
+        $image->drawImage($draw);
 
-      // draw the text
-      $topborder = 2;
-      $spaceatend = 5;
-      echo('<li>generiere Text</li>'); flush();
-      $draw->annotation(0, $topborder+$metrics['ascender'], $text);
+        // save to queue dir
+        $queuefilename = strftime('%Y-%m-%d_%H.%M.%S') . '_generated_text';
+        echo('<li>speichere Bild</li>'); flush();
+        file_put_contents($imagequeuedir . '/' . $queuefilename, $image);
 
-      // create image of correct size
-      echo('<li>generiere Bild</li>'); flush();
-      $image->newImage($spaceatend+$metrics['textWidth'], $topborder+$metrics['textHeight'], $background);
-      $image->setImageFormat('png');
-      echo('<li>zeichne Text ins Bild</li>'); flush();
-      $image->drawImage($draw);
-
-      // save to queue dir
-      $queuefilename = strftime('%Y-%m-%d_%H.%M.%S') . '_generated_text';
-      echo('<li>speichere Bild</li>'); flush();
-      file_put_contents($imagequeuedir . '/' . $queuefilename, $image);
-
-      // add to queue
-      echo('<li>Füge Bild zum Strickmuster hinzu</li>');
-      ayabJsonCall('/queue', array(
-        'addFile' => $imagequeuedir . '/' . $queuefilename,
-        'webURL' => $imagequeueurl . '/' . $queuefilename
-      ), true);
-      echo('<li>fertig!</li></ul></div>'); flush();
+        // add to queue
+        echo('<li>Füge Bild zum Strickmuster hinzu</li>');
+        ayabJsonCall('/queue', array(
+          'addFile' => $imagequeuedir . '/' . $queuefilename,
+          'webURL' => $imagequeueurl . '/' . $queuefilename
+        ), true);
+        echo('<li>fertig!</li></ul></div>'); flush();
+      }
       ob_start();
 
     }
@@ -635,11 +637,13 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
             <label for="fontname">Schriftart:</label>
             <select name="fontname" id="fontname">
               <?php
-//               $imagick = new Imagick();
-//               $fonts = $imagick->queryFonts();
-//               foreach($fonts as $font) {
-//                 echo('<option' . ($font==$_REQUEST['fontname'] ? ' selected="true"' : '') . ' value="' . $font . '">' . $font . '</option>');
-//               }
+              if (extension_loaded("Imagick")) {
+                $imagick = new Imagick();
+                $fonts = $imagick->queryFonts();
+                foreach($fonts as $font) {
+                  echo('<option' . ($font==$_REQUEST['fontname'] ? ' selected="true"' : '') . ' value="' . $font . '">' . $font . '</option>');
+                }
+              }
               ?>
             </select>
             <label for="fontsize">Schriftgrösse:</label>
