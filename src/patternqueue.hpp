@@ -119,9 +119,13 @@ namespace p44 {
     /// @param aAtWith needle number where to check status
     bool needleAtCursor(int aAtWidth);
 
-    /// Start new phase, auto-increments cursor when last phase is done
+    /// Start new phase, auto-increments cursor when new pattern row is needed for phase started with this call
     /// @return returns phase number
     int nextPhase();
+
+    /// Restart phase cycle, do not change cursor position
+    /// @return returns phase number
+    void resetPhase();
 
     /// Move cursor to new row
     /// @param aNewPos relative or absolute new position

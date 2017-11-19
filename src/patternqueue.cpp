@@ -195,6 +195,11 @@ bool PatternQueue::needleAtCursor(int aAtWidth)
 }
 
 
+void PatternQueue::resetPhase()
+{
+  rowPhase = 0; // reset
+}
+
 
 int PatternQueue::nextPhase()
 {
@@ -224,8 +229,8 @@ void PatternQueue::moveCursor(int aNewPos, bool aRelative, bool aBeginningOfEntr
   int newCursor = aRelative ? oldCursor+aNewPos : aNewPos;
   // not negative
   if (newCursor<0) newCursor=0;
-  // all cursor movements reset phase
-  if (!aKeepPhase) rowPhase = 0;
+  // cursor movements reset phase (except when called with aKeepPhase)
+  if (!aKeepPhase) resetPhase();
   // calculate entry and offset
   if (newCursor!=oldCursor) {
     // needs recalculation

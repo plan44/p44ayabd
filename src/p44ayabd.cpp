@@ -48,6 +48,7 @@ class P44ayabd : public CmdLineApp
   string statedir;
 
   long initiateTicket;
+  bool firstPhase;
 
 public:
 
@@ -385,7 +386,10 @@ public:
       // (Note: usually rowCallBack will be called with Error as long as machine is not ready)
       MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
       initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
+      return;
     }
+    patternQueue->resetPhase();
+    firstPhase = true;
   }
 
 
@@ -399,6 +403,14 @@ public:
       initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 3*Second);
     }
     else {
+      // if started fresh, no nextPhase() is needed
+      // Note: we could put nextPhase() call immediately after sending the row, but then cursor position
+      //   would show next phase (color, row) instead of current one. That's why we call next not before
+      //   actually sending the next row to the machine
+      if (!firstPhase) {
+        patternQueue->nextPhase(); // next
+      }
+      firstPhase = false;
       if (!patternQueue->endOfPattern()) {
         // there is a row, return it
         int w = patternQueue->width();
@@ -407,7 +419,6 @@ public:
         for (int y=w-1; y>=0; --y) {
           row->setRowPixel(y, patternQueue->needleAtCursor(y));
         }
-        patternQueue->nextPhase(); // next
       }
       // check for end of knit
       if (!row && !apiMode) {

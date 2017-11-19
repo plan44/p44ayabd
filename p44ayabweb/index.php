@@ -188,6 +188,25 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         left: 0;
       }
 
+      #cursorinfo {
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+
+      #currentcolor {
+        display: inline;
+        font-size: 30px;
+      }
+
+      #currentline {
+        display: inline;
+        font-size: 30px;
+      }
+
+      #currentphase {
+        display: inline;
+      }
+
       #usercursor {
         position: absolute;
         pointer-events: none;
@@ -264,6 +283,20 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           $('#cursor').width(cursor.position);
           $('#cursor').height(patternWidth);
           $('#usercursor').height(patternWidth);
+          // update cursor related status
+          var cols = cursor.activeColors;
+          var colstr = '';
+          var c;
+          for (c = 0; c<4; c++) {
+            if (cols & (1<<c)) {
+              if (colstr.length!=0) colstr += ', ';
+              colstr += (c+1).toString();
+            }
+          }
+          $('#currentcolor').html(colstr);
+          $('#currentline').html(cursor.position.toString());
+          $('#currentphase').html(cursor.phase.toString());
+          // also update overall status
           updateMachineStatus();
           // poll every 2 sec again
           cursorUpdaterTimeout = setTimeout(function() { updateCursor(); }, 1000);
@@ -326,14 +359,6 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           for (var i in queue) {
             var qe = queue[i];
             queueHTML += '<td width="' + qe.patternLength.toString() + '"><img id="' + i.toString() + '" src="' + qe.weburl + '"/></td>';
-//             queueHTML += '<td width="' + qe.patternLength.toString() + '" height="' + patternWidth + '" style="background-image:url(\'' + qe.weburl + '\');"/></td>';
-//             queueHTML += '<td style="min-width: ' + qe.patternLength.toString() + '; height: ' + patternWidth + '; background-image:url(\'' + qe.weburl + '\');"/></td>';
-/*
-             queueHTML +=
-               '<td width="' + qe.patternLength.toString() + '">' +
-               '<div class:"imageblock" style="min-width: ' + qe.patternLength.toString() + '; min-height: ' + patternWidth + '; background-image:url(\'' + qe.weburl + '\');"/></div>' +
-               '</td>';
-*/
           }
           queueHTML += '<td width="100%"></td>'; // rest
           queueHTML += '</tr><tr>';
@@ -574,16 +599,23 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         <button onClick="javascript:restartKnitting();">Neustart</button>
       </div>
       <div id="machineerr" style="display:none;">Nicht betriebsbereit, bitte warten</div>
+
+      <div id="cursorinfo">
+        Zeile: <div id="currentline"></div> Farbe: <div id="currentcolor"></div>  Phase: <div id="currentphase"></div>
+      </div>
+
       <div id="queue">
         <div id="queueimages"></div>
         <div id="cursor"></div>
         <div id="usercursor" style="display:none;"></div>
       </div>
+
       <div id="userCursorControls" style="display:none;">
         <button id="userCursorApplyButton" onclick="javascript:userCursorApply(false);">Position setzen</button>
         <button id="userCursorBoundaryButton" onclick="javascript:userCursorApply(true);">Position auf Bildanfang setzen</button>
         <button id="userCursorCancelButton" onclick="javascript:userCursorCancel();">Abbrechen</button>
       </div>
+
       <div id="queuecontrol">
 
         <div id="errormessage"><?php echo($errormessage); ?></div>
