@@ -327,6 +327,13 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       }
 
 
+      function userCursorZero()
+      {
+        $('#usercursor').width(0);
+        userCursorApply(true);
+      }
+
+
       function userCursorApply(boundary)
       {
         clearTimeout(cursorUpdaterTimeout);
@@ -646,6 +653,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         <button id="userCursorApplyButton" onclick="javascript:userCursorApply(false);">Position setzen</button>
         <button id="userCursorBoundaryButton" onclick="javascript:userCursorApply(true);">Position auf Bildanfang setzen</button>
         <button id="userCursorCancelButton" onclick="javascript:userCursorCancel();">Abbrechen</button>
+        <button id="userCursorZeroButton" onclick="javascript:userCursorZero();">Position auf 0</button>
       </div>
 
       <div id="queuecontrol">
