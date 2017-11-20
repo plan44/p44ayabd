@@ -225,25 +225,29 @@ public:
         if (aData->get("setWidth", o)) {
           foundAction = true;
           err = patternQueue->setWidth(o->int32Value());
-          patternQueue->saveState(statedir.c_str(), false);
+          // also needs restart
+          needsRestart = true;
+        }
+        if (aData->get("setShift", o)) {
+          foundAction = true;
+          err = patternQueue->setShift(o->int32Value());
           // also needs restart
           needsRestart = true;
         }
         if (aData->get("setRibber", o)) {
           foundAction = true;
           err = patternQueue->setRibberMode(o->boolValue());
-          patternQueue->saveState(statedir.c_str(), false);
           // also needs restart
           needsRestart = true;
         }
         if (aData->get("setColors", o)) {
           foundAction = true;
           err = patternQueue->setColors(o->int32Value());
-          patternQueue->saveState(statedir.c_str(), false);
           // also needs restart
           needsRestart = true;
         }
         if (foundAction) {
+          patternQueue->saveState(statedir.c_str(), false);
           if (needsRestart) {
             restartAyab(true);
           }
@@ -259,20 +263,20 @@ public:
       }
     }
     else if (aUri=="/queue") {
+      bool restartKnitting = false;
       if (aIsAction) {
         // check action to execute on queue
         if (aData->get("addFile", o)) {
-          bool restartKnitting = patternQueue->endOfPattern(); // if we've been at the end of the pattern, we'll need to restart after loading new pattern
+          restartKnitting = patternQueue->endOfPattern(); // if we've been at the end of the pattern, we'll need to restart after loading new pattern
           JsonObjectPtr p = aData->get("webURL");
           err = patternQueue->addFile(o->stringValue(), p->stringValue());
           patternQueue->saveState(statedir.c_str(), false);
-          if (Error::isOK(err)) {
-            // restart needed?
-            if (restartKnitting) {
-              MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
-              initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 1*Second);
-            }
-          }
+        }
+        else if (aData->get("addSpace", o)) {
+          restartKnitting = patternQueue->endOfPattern(); // if we've been at the end of the pattern, we'll need to restart after loading new pattern
+          JsonObjectPtr l = aData->get("length");
+          patternQueue->addSpace(l->int32Value());
+          patternQueue->saveState(statedir.c_str(), false);
         }
         else if (aData->get("removeFile", o)) {
           bool withDelete = false;
@@ -280,11 +284,18 @@ public:
           if (aData->get("delete", del)) {
             withDelete = del->boolValue();
           }
-          err = patternQueue->removeFile(o->int32Value(), withDelete);
+          err = patternQueue->removeSegment(o->int32Value(), withDelete);
           patternQueue->saveState(statedir.c_str(), false);
         }
         else {
           err = WebError::webErr(500, "Unknown action for /queue");
+        }
+        if (Error::isOK(err)) {
+          // restart needed?
+          if (restartKnitting) {
+            MainLoop::currentMainLoop().cancelExecutionTicket(initiateTicket);
+            initiateTicket = MainLoop::currentMainLoop().executeOnce(boost::bind(&P44ayabd::initiateKnitting, this), 1*Second);
+          }
         }
       }
       else {

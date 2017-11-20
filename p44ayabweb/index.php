@@ -149,6 +149,16 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
         margin: 0;
         vertical-align: top;
       }
+      td.patterncell {
+        overflow:hidden;
+      }
+      div.patterndiv {
+        overflow:hidden;
+        position:relative;
+      }
+      img.patternimg {
+        overflow:hidden;
+      }
       .imageblock {
         display: block;
       }
@@ -238,6 +248,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       var cursorUpdaterTimeout = 0;
 
       var patternWidth = 0;
+      var patternShift = 0;
       var ribber = false;
       var colors = 0;
 
@@ -305,8 +316,11 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
 
       function queueClick(event)
       {
-        var x = event.layerX; // layerX,Y = relative to the closest positioned element
+        var x = event.layerX; // layerX,Y = relative to the closest positioned element (which is the relatively positioned pattern div)
         var y = event.layerY;
+        console.log("x=" + x.toString() + ", y=" + y.toString() + ", target=" + event.target.id);
+        var op = $('#'+event.target.id).offsetParent();
+        x += op.position().left;
         $('#usercursor').show();
         $('#usercursor').width(x);
         $('#userCursorControls').show();
@@ -353,12 +367,19 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           var state = response.result;
           var queue = state.queue;
           patternWidth = state.patternWidth;
+          patternShift = state.patternShift;
           colors = state.colors;
           ribber = state.ribber;
           var queueHTML = '<table><tr onclick="javascript:queueClick(event);" height="' + patternWidth.toString() + '">';
           for (var i in queue) {
             var qe = queue[i];
-            queueHTML += '<td width="' + qe.patternLength.toString() + '"><img id="' + i.toString() + '" src="' + qe.weburl + '"/></td>';
+            //queueHTML += '<td width="' + qe.patternLength.toString() + '"><img style="position:absolute; top:' + patternShift.toString() + ';" id="' + i.toString() + '" src="' + qe.weburl + '"/></td>';
+            queueHTML +=
+              '<td class="patterncell" width="' + qe.patternLength.toString() + '">' +
+              '  <div class="patterndiv" style="top:' + patternShift.toString() + 'px; width:' + qe.patternLength.toString() + 'px;">' +
+              '     <img class="patternimg" id="pattern' + i.toString() + '" src="' + qe.weburl + '"/>' +
+              '  </div>' +
+              '</td>';
           }
           queueHTML += '<td width="100%"></td>'; // rest
           queueHTML += '</tr><tr>';
@@ -369,6 +390,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           queueHTML += '</tr><table>';
           $('#queueimages').html(queueHTML);
           $('#patternWidth').val(patternWidth.toString());
+          $('#patternShift').val(patternShift.toString());
           $('#colors').val(colors.toString());
           $('#ribber').prop('checked', ribber);
           // also update cursor
@@ -415,13 +437,14 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
       function applyNewParams()
       {
         var width = $('#patternWidth').val();
+        var shift = $('#patternShift').val();
         var ribber = $('#ribber').is(':checked');
         var colors = $('#colors').val();
         $.ajax({
           url: '/api.php/machine',
           type: 'post',
           dataType: 'json',
-          data: JSON.stringify({ "setWidth" : width, "setRibber":ribber, "setColors":colors }),
+          data: JSON.stringify({ "setWidth":width, "setShift":shift, "setRibber":ribber, "setColors":colors }),
           timeout: 3000
         }).done(function(response) {
           updateQueue();
@@ -515,6 +538,13 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           ), true);
         }
       }
+    }
+    else if (isset($_REQUEST['addnewspace'])) {
+      $space = $_REQUEST['newspace'];
+      ayabJsonCall('/queue', array(
+        'addSpace' => 1,
+        'length' => $space
+      ), true);
     }
     else if (isset($_REQUEST['addnewtext'])) {
       // get text
@@ -631,6 +661,9 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
 
         <p>
           <form action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="POST">
+            <label for="newspace">Abstand hinzufügen:</label>
+            <input type="number" min="1" max="100" name="newspace" id="newspace" />&nbsp;<button name="addnewspace" type="submit">Abstand hinzufügen</button>
+            <br/>
             <label for="newtext">Neuen Text hinzufügen:</label>
             <input name="newtext" id="newtext" />&nbsp;<button name="addnewtext" type="submit">Text hinzufügen</button>
             <br/>
@@ -655,6 +688,8 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
           <form>
             <label for="patternWidth">Musterbreite:</label>
             <input type="number" min="10" max="200" name="patternWidth" id="patternWidth" />
+            <label for="patternShift">Oberer Rand:</label>
+            <input type="number" min="0" max="199" name="patternShift" id="patternShift" />
             <label for="ribber">Doppelbett:</label>
             <input type="checkbox" name="ribber" id="ribber" value="1"/>
             <label for="colors">Anzahl Farben:</label>

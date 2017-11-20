@@ -76,8 +76,9 @@ namespace p44 {
     // the row phase (for ribber mode)
     int rowPhase;
 
-    // the width
-    int patternWidth;
+    // the pattern
+    int patternWidth; ///< pattern width
+    int patternShift; ///< pattern offset (+up or -down) on a left-to-right knitted banner
 
     // ribber and colorchanger
     bool ribber; ///< if set: mode for ribber + color changer
@@ -142,8 +143,13 @@ namespace p44 {
     /// @return number of colors
     int colors() { return numColors; };
 
-    /// @param set new width of queue
+    /// set new width of queue
+    /// @param aWidth new width
     ErrorPtr setWidth(int aWidth);
+
+    /// set new baseline shift (+down, -up) of all patterns in the queue
+    /// @param aShift new "baseline" shift
+    ErrorPtr setShift(int aShift);
 
     /// @param set ribber mode
     ErrorPtr setRibberMode(bool aRibber);
@@ -162,11 +168,16 @@ namespace p44 {
     /// @return ok if the file could be loaded, error otherwise
     ErrorPtr addFile(string aFilePath, string aWebURL);
 
-    /// remove a file from the queue
+    /// add an amount of space to the queue
+    /// @param aLength the length of the space
+    /// @return ok if the file could be loaded, error otherwise
+    ErrorPtr addSpace(int aLength);
+
+    /// remove a segment from the queue
     /// @param aIndex queue index, 0...queue size-1
-    /// @param aDeleteFile actually delete the file from the file system
+    /// @param aDeleteFile actually delete the file from the file system (if it is not space anyway)
     /// @return ok if the file could be removed, error otherwise
-    ErrorPtr removeFile(int aIndex, bool aDeleteFile);
+    ErrorPtr removeSegment(int aIndex, bool aDeleteFile);
 
 
   private:

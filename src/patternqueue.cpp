@@ -40,6 +40,7 @@ void PatternQueue::clear()
   rowPhase = 0; // first
   cursorOffset = 0;
   patternWidth = 0; // none
+  patternShift = 0; // no offset
   numColors = 2; // default
   ribber = false; // none
 }
@@ -48,6 +49,14 @@ void PatternQueue::clear()
 ErrorPtr PatternQueue::setWidth(int aWidth)
 {
   patternWidth = aWidth;
+  stateDirty = true;
+  return ErrorPtr();
+}
+
+
+ErrorPtr PatternQueue::setShift(int aShift)
+{
+  patternShift = aShift;
   stateDirty = true;
   return ErrorPtr();
 }
@@ -98,7 +107,25 @@ ErrorPtr PatternQueue::addFile(string aFilePath, string aWebURL)
 }
 
 
-ErrorPtr PatternQueue::removeFile(int aIndex, bool aDeleteFile)
+ErrorPtr PatternQueue::addSpace(int aLength)
+{
+  PatternContainerPtr pattern = PatternContainerPtr(new PatternContainer);
+  pattern->setSize(5, aLength);
+  PatternQueueEntryPtr qe = PatternQueueEntryPtr(new PatternQueueEntry);
+  qe->pattern = pattern;
+  qe->patternLength = pattern->length();
+  // - push into queue
+  queue.push_back(qe);
+  stateDirty = true; // new entry, state is dirty now
+  // make sure image under cursor is loaded (and others are not)
+  loadPatternAtCursor();
+  return ErrorPtr();
+}
+
+
+
+
+ErrorPtr PatternQueue::removeSegment(int aIndex, bool aDeleteFile)
 {
   if (aIndex>=queue.size()) {
     return WebError::webErr(500, "Invalid index");
@@ -107,10 +134,13 @@ ErrorPtr PatternQueue::removeFile(int aIndex, bool aDeleteFile)
   if (cursorEntry==aIndex && cursorOffset>0) {
     return WebError::webErr(500, "Cannot remove file under cursor");
   }
-  // delete file if requested
+  // delete file if requested (and its not a empty pattern)
   stateDirty = true;
   if (aDeleteFile) {
-    unlink(queue[aIndex]->filepath.c_str());
+    string fp = queue[aIndex]->filepath;
+    if (fp.size()>0) {
+      unlink(fp.c_str());
+    }
   }
   // remove from queue
   queue.erase(queue.begin()+aIndex);
@@ -178,7 +208,7 @@ int PatternQueue::colorNoAtCursor(int aAtWidth)
     if (qe->pattern) {
       // check color
       // FIXME: only works for 2 colors and B&W input template
-      currentColorNo = qe->pattern->grayAt(cursorOffset, aAtWidth)>128 ? 1 : 0;
+      currentColorNo = qe->pattern->grayAt(cursorOffset, aAtWidth-patternShift)>128 ? 1 : 0;
     }
   }
   return currentColorNo;
@@ -188,8 +218,11 @@ int PatternQueue::colorNoAtCursor(int aAtWidth)
 bool PatternQueue::needleAtCursor(int aAtWidth)
 {
   int colorNo = colorNoAtCursor(aAtWidth);
-  // FIXME: works for 2 colors only
-  bool invert = rowPhase==1 || rowPhase==2;
+  bool invert = false;
+  if (ribber) {
+    // FIXME: works for 2 colors only
+    invert = rowPhase==0 || rowPhase==3;
+  }
   bool hascol = colorNo!=0;
   return invert!=hascol; // XOR
 }
@@ -274,7 +307,14 @@ void PatternQueue::loadPatternAtCursor()
       if (!qe->pattern) {
         // load it
         qe->pattern = PatternContainerPtr(new PatternContainer);
-        ErrorPtr err = qe->pattern->readPNGfromFile(qe->filepath.c_str());
+        if (qe->filepath.size()>0) {
+          // actually load from file
+          ErrorPtr err = qe->pattern->readPNGfromFile(qe->filepath.c_str());
+        }
+        else {
+          // just space, create from length
+          qe->pattern->setSize(5, qe->patternLength);
+        }
       }
     }
     else {
@@ -302,6 +342,9 @@ void PatternQueue::loadState(const char *aStateDir)
     // the pattern width
     o = s->get("patternWidth");
     if (o) patternWidth = o->int32Value();
+    // the pattern shift
+    o = s->get("patternShift");
+    if (o) patternShift = o->int32Value();
     // ribber mode
     o = s->get("ribber");
     if (o) ribber = o->boolValue();
@@ -390,6 +433,7 @@ JsonObjectPtr PatternQueue::queueStateJSON()
   s->add("queue",queueEntriesJSON());
   s->add("cursor",cursorStateJSON());
   s->add("patternWidth",JsonObject::newInt32(patternWidth));
+  s->add("patternShift",JsonObject::newInt32(patternShift));
   s->add("ribber",JsonObject::newBool(ribber));
   s->add("colors",JsonObject::newInt32(numColors));
   return s;

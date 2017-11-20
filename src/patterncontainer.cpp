@@ -26,7 +26,11 @@ using namespace p44;
 
 
 PatternContainer::PatternContainer() :
-  pngBuffer(NULL)
+  pngBuffer(NULL),
+  patternWidth(0),
+  patternLength(0),
+  imgOffsetW(0),
+  imgOffsetL(0)
 {
   clear();
 }
@@ -34,6 +38,11 @@ PatternContainer::PatternContainer() :
 
 void PatternContainer::clear()
 {
+  // init empty size
+  patternLength = 0;
+  patternWidth = 0;
+  imgOffsetW = 0;
+  imgOffsetL= 0;
   // init libpng image structure
   memset(&pngImage, 0, (sizeof pngImage));
   pngImage.version = PNG_IMAGE_VERSION;
@@ -48,9 +57,9 @@ void PatternContainer::clear()
 void PatternContainer::dumpPatternToConsole()
 {
   if (pngBuffer) {
-    for (int x=0; x<pngImage.width; x++) {
-      for (int y=pngImage.height-1; y>=0; --y) {
-        fputc(pngBuffer[y*pngImage.width+x]<128 ? 'X' : '.', stdout);
+    for (int x=0; x<patternLength; x++) {
+      for (int y=patternWidth-1; y>=0; --y) {
+        fputc(grayAt(x, y)<128 ? 'X' : '.', stdout);
       }
       fprintf(stdout, "\n");
     }
@@ -96,19 +105,24 @@ ErrorPtr PatternContainer::readPNGfromFile(const char *aPNGFileName)
     }
   }
   // image read ok
+  // - set size (Note: width and length reversed, as we need the pattern sidewards)
+  patternLength = pngImage.width;
+  patternWidth = pngImage.height;
   return ErrorPtr();
 }
 
 
-int PatternContainer::width()
+void PatternContainer::setSize(int aWidth, int aLength)
 {
-  return pngImage.height; // height of image is width of pattern to knit
+  patternWidth = aWidth;
+  patternLength = aLength;
 }
 
 
-int PatternContainer::length()
+void PatternContainer::setContentOffset(int aOffsetW, int aOffsetL)
 {
-  return pngImage.width; // width of image is length of pattern to knit
+  imgOffsetW = aOffsetW;
+  imgOffsetL = aOffsetL;
 }
 
 
@@ -118,7 +132,19 @@ uint8_t PatternContainer::grayAt(int aAtLenght, int aAtWidth)
     pngBuffer == NULL ||
     aAtLenght<0 || aAtLenght>=length() ||
     aAtWidth<0 || aAtWidth>=width()
-  ) return 0; // no color
+  ) {
+    return 0; // outside pattern -> no color
+  }
+  // within pattern, apply offsets
+  aAtLenght -= imgOffsetL;
+  aAtWidth -= imgOffsetW;
+  if (
+    aAtLenght<0 || aAtLenght>=pngImage.width ||
+    aAtWidth<0 || aAtWidth>=pngImage.height
+  ) {
+    return 0; // outside image -> no color
+  }
+  // inside image, return level of gray/black
   return 255-pngBuffer[aAtWidth*length()+aAtLenght]; // pixel information is amount of white, we want amount of black
 }
 

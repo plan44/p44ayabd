@@ -39,9 +39,14 @@ class PatternContainer : public P44Obj
 {
   typedef P44Obj inherited;
 
-  png_image pngImage; /// The control structure used by libpng
-  png_bytep pngBuffer; /// byte buffer
+  png_image pngImage; ///< The control structure used by libpng
+  png_bytep pngBuffer; ///< byte buffer
 
+  int patternWidth; ///< the width
+  int patternLength; ///< the length
+
+  int imgOffsetW; ///< content offset in width
+  int imgOffsetL; ///< content offset in length
 
 public:
 
@@ -53,14 +58,28 @@ public:
   /// read pattern from file
   ErrorPtr readPNGfromFile(const char *aPNGFileName);
 
+  /// set size for pattern
+  void setSize(int aWidth, int aLength);
+
+  /// set offset for image content
+  void setContentOffset(int aOffsetW, int aOffsetL);
+
+
   /// dump pattern to console in ASCII-Art style
   void dumpPatternToConsole();
 
   /// get pattern width
-  int width();
+  int width() { return patternWidth; };
 
   /// get pattern length
-  int length();
+  int length() { return patternLength; };
+
+  /// get image offset in width
+  int offsetW() { return imgOffsetW; };
+
+  /// get image offset in length
+  int offsetL() { return imgOffsetL; };
+
 
   /// get gray value at given point
   uint8_t grayAt(int aAtLenght, int aAtWidth);
