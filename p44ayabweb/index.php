@@ -383,15 +383,29 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
             //queueHTML += '<td width="' + qe.patternLength.toString() + '"><img style="position:absolute; top:' + patternShift.toString() + ';" id="' + i.toString() + '" src="' + qe.weburl + '"/></td>';
             queueHTML +=
               '<td class="patterncell" width="' + qe.patternLength.toString() + '">' +
-              '  <div class="patterndiv" style="top:' + patternShift.toString() + 'px; width:' + qe.patternLength.toString() + 'px;">' +
-              '     <img class="patternimg" id="pattern' + i.toString() + '" src="' + qe.weburl + '"/>' +
+              '  <div class="patterndiv" style="top:' + patternShift.toString() + 'px; width:' + qe.patternLength.toString() + 'px;">';
+            if (qe.weburl.length>0) {
+              // image
+              queueHTML += '<img class="patternimg" id="pattern' + i.toString() + '" src="' + qe.weburl + '"/>';
+            }
+            else {
+              // empty, but need a div for cursor clicking
+              queueHTML += '<div id="space' + i.toString() + '" style="width:' + qe.patternLength.toString() + 'px; height:' + patternWidth.toString() + 'px;"></div>';
+            }
+            queueHTML +=
               '  </div>' +
               '</td>';
           }
           queueHTML += '<td width="100%"></td>'; // rest
           queueHTML += '</tr><tr>';
           for (var i in queue) {
-            queueHTML += '<td class="' + (i==state.cursor.entry ? 'currentsegment' : 'deletebutton')+ '" onClick="javascript:removeImg(' + i.toString() + ', true);">X</td>';
+            var qe = queue[i];
+            queueHTML +=
+              '<td height="18px" class="' + (i==state.cursor.entry ? 'currentsegment' : 'deletebutton')+ '" onClick="javascript:removeImg(' + i.toString() + ', true);">';
+            if (qe.patternLength>=15)
+              queueHTML += 'X';
+            queueHTML +=
+              '</td>';
             i++;
           }
           queueHTML += '</tr><table>';
