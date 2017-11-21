@@ -1,7 +1,7 @@
 # p44ayabd - Text Banner Knitting using AYAB and a RaspberryPi
 
 - original Version 2015
-- updated November 2017
+- updated November 2017 - added ribber (*Doppelbett*, KR830/840) support, added vertical pattern shift, yarn number display, empty space insert option.
 
 ## Goal
 
@@ -176,11 +176,13 @@ It will look like this:
 
 I hope the UI is more or less self-explanatory (even if currently in German only).
 
-You can add text (or images) in segments to the queue, click to re-position the knitting cursor, remove text segments already or not yet knitted, select a font and also restart the AYAB in case something goes wrong.
+You can add text (or images, or empty space) in segments to the queue, click to re-position the knitting cursor, remove text segments already or not yet knitted, select a font and also restart the AYAB in case something goes wrong.
 
-Even if someone trips over the power cord and reboots the Rpi, the queue, pattern width and cursor is preserved and you should be able to continue knitting where you left off.
+When using the ribber with double jaquard pattern, the display of the currently to-be-selected yarn color is helpful.
 
-Happy text banner knitting!
+Even if someone trips over the power cord and reboots the Rpi, the queue and all parameters, as well as the cursor position is preserved and you should be able to continue knitting where you left off.
+
+Happy banner knitting!
 
 
 

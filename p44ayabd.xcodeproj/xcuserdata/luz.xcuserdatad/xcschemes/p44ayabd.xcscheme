@@ -82,11 +82,11 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--ayabconnection /dev/cu.usbmodem1451"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--ayabconnection simulation"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-l 5"

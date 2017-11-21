@@ -123,6 +123,7 @@
 		ED8623051AC29DB600CB818B /* gpio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gpio.h; sourceTree = "<group>"; };
 		ED8623241AC2EF4E00CB818B /* ayabcomm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ayabcomm.cpp; sourceTree = "<group>"; };
 		ED8623251AC2EF4E00CB818B /* ayabcomm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ayabcomm.hpp; sourceTree = "<group>"; };
+		EDA618B61FC43FB100D0C88D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		EDA79BBD1AF12667004EDEE1 /* patterncontainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = patterncontainer.cpp; sourceTree = "<group>"; };
 		EDA79BBE1AF12667004EDEE1 /* patterncontainer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = patterncontainer.hpp; sourceTree = "<group>"; };
 		EDB1E2A11AF3A60D0013A92D /* patternqueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = patternqueue.cpp; sourceTree = "<group>"; };
@@ -143,6 +144,7 @@
 		ED8622B61AC29D4800CB818B = {
 			isa = PBXGroup;
 			children = (
+				EDA618B61FC43FB100D0C88D /* README.md */,
 				ED0A3B3A1FB2674600F3FB89 /* configure.ac */,
 				ED0A3B3B1FB2674600F3FB89 /* Makefile.am */,
 				ED8622C11AC29D4800CB818B /* src */,

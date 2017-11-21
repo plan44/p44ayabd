@@ -508,7 +508,7 @@ function ayabJsonCall($aUri, $aJsonRequest = false, $aAction = false)
               <li>Strickmaschine KH930 und Knowhow von <a href="http://zurich.fablab.ch" target="_blank">Fablab Zürich</a></li>
               <li><a href="http://www.arduino.cc" target="_blank">Arduino</a></li>
               <li><a href="https://www.raspberrypi.org" target="_blank">Raspberry Pi</a></li>
-              <li>p44ayabd, Web-Interface und setup von <a href="" target="_blank">luz/plan44.ch</a></li>
+              <li>p44ayabd, Web-Interface und setup von <a href="https://github.com/plan44/p44ayabd" target="_blank">luz/plan44.ch</a></li>
             </ul>
           </td>
         </tr>
